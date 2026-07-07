@@ -1,0 +1,411 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ============================================================
+   CLAY DESIGN SYSTEM — CSS CUSTOM PROPERTIES
+   Source: DESIGN-clay.md
+   ============================================================ */
+
+:root {
+  /* === COLORS === */
+  --clay-ink:              #0a0a0a;
+  --clay-primary:          #0a0a0a;
+  --clay-primary-active:   #1f1f1f;
+  --clay-body:             #3a3a3a;
+  --clay-body-strong:      #1a1a1a;
+  --clay-muted:            #6a6a6a;
+  --clay-muted-soft:       #9a9a9a;
+  --clay-hairline:         #e5e5e5;
+  --clay-hairline-soft:    #f0f0f0;
+
+  /* Surfaces */
+  --clay-canvas:           #fffaf0;
+  --clay-surface-soft:     #faf5e8;
+  --clay-surface-card:     #f5f0e0;
+  --clay-surface-strong:   #ebe6d6;
+  --clay-surface-dark:     #0a1a1a;
+  --clay-surface-dark-el:  #1a2a2a;
+
+  /* Brand accents */
+  --clay-pink:             #ff4d8b;
+  --clay-teal:             #1a3a3a;
+  --clay-lavender:         #b8a4ed;
+  --clay-peach:            #ffb084;
+  --clay-ochre:            #e8b94a;
+  --clay-mint:             #a4d4c5;
+  --clay-coral:            #ff6b5a;
+
+  /* Status semantic */
+  --clay-success:          #22c55e;
+  --clay-warning:          #f59e0b;
+  --clay-error:            #ef4444;
+
+  /* === RADIUS === */
+  --r-xs:   6px;
+  --r-sm:   8px;
+  --r-md:   12px;
+  --r-lg:   16px;
+  --r-xl:   24px;
+  --r-pill: 9999px;
+
+  /* === SPACING === */
+  --sp-xxs: 4px;
+  --sp-xs:  8px;
+  --sp-sm:  12px;
+  --sp-md:  16px;
+  --sp-lg:  24px;
+  --sp-xl:  32px;
+  --sp-xxl: 48px;
+  --sp-sec: 96px;
+}
+
+/* === GLOBAL BASE === */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: var(--clay-canvas);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: var(--clay-body);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* === TYPOGRAPHY UTILITIES === */
+
+.clay-display-xl {
+  font-size: 72px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -2.5px;
+  color: var(--clay-ink);
+}
+
+.clay-display-lg {
+  font-size: 56px;
+  font-weight: 500;
+  line-height: 1.05;
+  letter-spacing: -2px;
+  color: var(--clay-ink);
+}
+
+.clay-display-md {
+  font-size: 40px;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -1px;
+  color: var(--clay-ink);
+}
+
+.clay-display-sm {
+  font-size: 32px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  color: var(--clay-ink);
+}
+
+.clay-title-lg {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.3px;
+}
+
+.clay-title-md {
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.clay-title-sm {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.clay-body-md {
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.clay-body-sm {
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.55;
+}
+
+.clay-caption {
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.clay-caption-uc {
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+
+.clay-button {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* === CLAY COMPONENT PRIMITIVES === */
+
+/* Primary button */
+.clay-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  background: var(--clay-primary);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-md);
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  white-space: nowrap;
+}
+
+.clay-btn-primary:hover {
+  background: var(--clay-primary-active);
+  transform: translateY(-1px);
+}
+
+.clay-btn-primary:active {
+  transform: translateY(0);
+}
+
+/* Secondary button */
+.clay-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 20px;
+  background: var(--clay-canvas);
+  color: var(--clay-ink);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--clay-hairline);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.clay-btn-secondary:hover {
+  border-color: var(--clay-ink);
+  background: var(--clay-surface-soft);
+}
+
+/* On-color button (used over saturated cards) */
+.clay-btn-on-color {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 20px;
+  background: var(--clay-canvas);
+  color: var(--clay-ink);
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: var(--r-md);
+  border: none;
+  cursor: pointer;
+}
+
+/* Text input */
+.clay-input {
+  height: 44px;
+  padding: 0 16px;
+  background: var(--clay-canvas);
+  color: var(--clay-ink);
+  font-size: 16px;
+  font-weight: 400;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--clay-hairline);
+  outline: none;
+  transition: border-color 0.15s ease;
+  width: 100%;
+}
+
+.clay-input:focus {
+  border-color: var(--clay-ink);
+}
+
+.clay-input::placeholder {
+  color: var(--clay-muted-soft);
+}
+
+.clay-select {
+  height: 44px;
+  padding: 0 12px;
+  background: var(--clay-canvas);
+  color: var(--clay-ink);
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: var(--r-md);
+  border: 1.5px solid var(--clay-hairline);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%236a6a6a' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  transition: border-color 0.15s ease;
+}
+
+.clay-select:focus {
+  border-color: var(--clay-ink);
+}
+
+/* Feature cards */
+.clay-card {
+  border-radius: var(--r-xl);
+  padding: 32px;
+  position: relative;
+  overflow: hidden;
+}
+
+.clay-card-pink     { background: var(--clay-pink); color: #ffffff; }
+.clay-card-teal     { background: var(--clay-teal); color: #ffffff; }
+.clay-card-lavender { background: var(--clay-lavender); color: var(--clay-ink); }
+.clay-card-peach    { background: var(--clay-peach); color: var(--clay-ink); }
+.clay-card-ochre    { background: var(--clay-ochre); color: var(--clay-ink); }
+.clay-card-cream    { background: var(--clay-surface-card); color: var(--clay-ink); }
+
+/* Content card */
+.clay-content-card {
+  background: var(--clay-canvas);
+  border: 1.5px solid var(--clay-hairline);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+
+/* Surface card */
+.clay-surface-card {
+  background: var(--clay-surface-card);
+  border-radius: var(--r-lg);
+  padding: 24px;
+}
+
+/* Badge pill */
+.clay-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--clay-surface-card);
+  color: var(--clay-ink);
+  font-size: 13px;
+  font-weight: 500;
+  border-radius: var(--r-pill);
+}
+
+/* Table styles */
+.clay-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.clay-table thead tr {
+  background: var(--clay-surface-strong);
+}
+
+.clay-table th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--clay-muted);
+}
+
+.clay-table td {
+  padding: 16px;
+  font-size: 14px;
+  color: var(--clay-body-strong);
+  border-bottom: 1px solid var(--clay-hairline-soft);
+}
+
+.clay-table tbody tr:hover {
+  background: var(--clay-surface-soft);
+}
+
+.clay-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--clay-surface-soft);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--clay-hairline);
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--clay-muted-soft);
+}
+
+/* === ANIMATIONS === */
+
+@keyframes clay-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes clay-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.clay-animate-fade-up {
+  animation: clay-fade-up 0.35s ease both;
+}
+
+.clay-animate-scale-in {
+  animation: clay-scale-in 0.25s ease both;
+}
