@@ -40,28 +40,9 @@ export default function Login() {
       background: "var(--clay-canvas)",
       padding: "24px"
     }}>
-      <div style={{
-        display: "grid",
-        gridTemplateColumns: "1fr 1fr",
-        width: "100%",
-        maxWidth: "1040px",
-        background: "var(--clay-surface-soft)",
-        borderRadius: "var(--r-xl)",
-        border: "1.5px solid var(--clay-hairline)",
-        overflow: "hidden",
-        boxShadow: "0 8px 32px rgba(10, 10, 10, 0.04)"
-      }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 w-full max-w-[1040px] bg-[var(--clay-surface-soft)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline overflow-hidden shadow-[0_8px_32px_rgba(10,10,10,0.04)]">
         {/* Left Panel: Branding & Details */}
-        <div style={{
-          background: "var(--clay-teal)",
-          color: "#ffffff",
-          padding: "48px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "space-between",
-          position: "relative",
-          overflow: "hidden"
-        }}>
+        <div className="hidden lg:flex flex-col justify-between relative overflow-hidden bg-clay-teal text-white p-12">
           {/* Background circles */}
           <div style={{
             position: "absolute", right: "-40px", top: "-40px",
@@ -138,13 +119,7 @@ export default function Login() {
         </div>
 
         {/* Right Panel: Login Form & Quick Access */}
-        <div style={{
-          padding: "48px",
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          background: "var(--clay-canvas)"
-        }}>
+        <div className="flex flex-col justify-center bg-[var(--clay-canvas)] p-6 sm:p-12">
           <div>
             <h2 style={{
               fontSize: "32px", fontWeight: 500,
@@ -239,7 +214,7 @@ export default function Login() {
             }}>
               Demo Quick-Login (Switch Roles instantly)
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {demoAccounts.map((acc) => (
                 <button
                   key={acc.email}

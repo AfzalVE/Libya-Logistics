@@ -1,8 +1,8 @@
-import { FaSearch, FaBell, FaUserCircle } from "react-icons/fa";
+import { FaSearch, FaBell, FaUserCircle, FaBars } from "react-icons/fa";
 import useAuthStore from "../store/useAuthStore";
 import { useNavigate } from "react-router-dom";
 
-export default function Topbar() {
+export default function Topbar({ onToggleSidebar }) {
   const { user, quickLogin } = useAuthStore();
   const navigate = useNavigate();
 
@@ -35,42 +35,53 @@ export default function Topbar() {
   ];
 
   return (
-    <header style={{
-      background: "var(--clay-canvas)",
-      borderBottom: "1.5px solid var(--clay-hairline)",
-      padding: "0 40px",
-      height: "68px",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "space-between",
-      position: "sticky",
-      top: 0,
-      zIndex: 40,
-    }}>
+    <header 
+      className="px-4 md:px-10"
+      style={{
+        background: "var(--clay-canvas)",
+        borderBottom: "1.5px solid var(--clay-hairline)",
+        height: "68px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        position: "sticky",
+        top: 0,
+        zIndex: 40,
+      }}
+    >
 
-      {/* Left — Breadcrumb / Title */}
-      <div>
-        <p style={{
-          fontSize: "12px", fontWeight: 600,
-          letterSpacing: "1.2px", textTransform: "uppercase",
-          color: "var(--clay-muted)", margin: 0,
-        }}>
-          Libya Logistics
-        </p>
-        <h2 style={{
-          fontSize: "18px", fontWeight: 600,
-          letterSpacing: "-0.3px", color: "var(--clay-ink)",
-          margin: "2px 0 0 0", lineHeight: 1.3,
-        }}>
-          {currentRole} Dashboard
-        </h2>
+      {/* Left — Hamburger + Breadcrumb */}
+      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+        <button
+          onClick={onToggleSidebar}
+          className="lg:hidden p-2 -ml-2 rounded-md hover:bg-[var(--clay-surface-soft)] text-[var(--clay-muted)] flex items-center"
+          style={{ border: "none", background: "none", cursor: "pointer" }}
+        >
+          <FaBars size={20} />
+        </button>
+        <div>
+          <p style={{
+            fontSize: "12px", fontWeight: 600,
+            letterSpacing: "1.2px", textTransform: "uppercase",
+            color: "var(--clay-muted)", margin: 0,
+          }}>
+            Libya Logistics
+          </p>
+          <h2 style={{
+            fontSize: "18px", fontWeight: 600,
+            letterSpacing: "-0.3px", color: "var(--clay-ink)",
+            margin: "2px 0 0 0", lineHeight: 1.3,
+          }}>
+            {currentRole} Dashboard
+          </h2>
+        </div>
       </div>
 
       {/* Right */}
       <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
 
         {/* Demo Switcher Widget */}
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="hidden lg:flex" style={{ alignItems: "center", gap: "8px" }}>
           <span style={{ fontSize: "12px", fontWeight: 600, color: "var(--clay-muted)", textTransform: "uppercase" }}>
             Switch User:
           </span>
@@ -98,7 +109,7 @@ export default function Topbar() {
         </div>
 
         {/* Divider */}
-        <div style={{
+        <div className="hidden lg:block" style={{
           width: "1.5px",
           height: "28px",
           background: "var(--clay-hairline)",
@@ -152,7 +163,7 @@ export default function Topbar() {
             {getInitials(user?.name)}
           </div>
 
-          <div>
+          <div className="hidden sm:block">
             <p style={{
               fontWeight: 600, fontSize: "14px",
               color: "var(--clay-ink)", margin: 0, lineHeight: 1.2,

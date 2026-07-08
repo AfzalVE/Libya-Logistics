@@ -4,6 +4,7 @@ import PageHeader from "../components/PageHeader";
 import TableCard from "../components/TableCard";
 import StatusBadge from "../components/StatusBadge";
 import useAuthStore from "../store/useAuthStore";
+import { FaChevronDown } from "react-icons/fa";
 
 export default function Users() {
   const [users, setUsers] = useState([]);
@@ -74,6 +75,8 @@ export default function Users() {
   const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editWarehouse, setEditWarehouse] = useState("");
+  const [editRole, setEditRole] = useState("");
+  const [activeMenuId, setActiveMenuId] = useState(null);
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -85,6 +88,7 @@ export default function Users() {
         api.get("/warehouses"),
         api.get("/users/roles"),
       ]);
+      // console.log(usersRes.data)
       setUsers(usersRes.data);
       setWarehouses(whRes.data);
       setRoles(rolesRes.data);
@@ -140,6 +144,9 @@ export default function Users() {
   const roleObj = roles.find((r) => r._id === selectedRole);
   const requiresWarehouse = roleObj?.name !== "Super Admin";
 
+  const editRoleObj = roles.find((r) => r._id === editRole);
+  const editRequiresWarehouse = editRoleObj?.name !== "Super Admin";
+
   const openEditModal = (user) => {
     setEditingUser(user);
 
@@ -147,6 +154,7 @@ export default function Users() {
     setEditEmail(user.email || "");
     setEditPhone(user.phone || "");
     setEditWarehouse(user.warehouse?._id || "");
+    setEditRole(user.role?._id || "");
 
     setShowEditModal(true);
   };
@@ -155,11 +163,15 @@ export default function Users() {
     e.preventDefault();
 
     try {
+      const selectedRoleObj = roles.find((r) => r._id === editRole);
+      const isSuperAdminRole = selectedRoleObj?.name === "Super Admin";
+
       await api.put(`/users/${editingUser._id}`, {
         name: editName,
         email: editEmail,
         phone: editPhone,
-        warehouse: editWarehouse,
+        warehouse: isSuperAdminRole ? undefined : editWarehouse,
+        role: editRole,
       });
 
       setShowEditModal(false);
@@ -265,164 +277,190 @@ export default function Users() {
               System Users
             </h2>
           </div>
-          <table className="clay-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Role</th>
-                <th>Assigned Location</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {users.map((u) => (
-                <tr key={u._id}>
-                  <td style={{ fontWeight: 500, color: "var(--clay-ink)" }}>
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "10px",
-                      }}
-                    >
+          <div className="overflow-x-auto">
+            <table className="clay-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Assigned Location</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map((u) => (
+                  <tr key={u._id}>
+                    <td style={{ fontWeight: 500, color: "var(--clay-ink)" }}>
                       <div
                         style={{
-                          width: "32px",
-                          height: "32px",
-                          borderRadius: "50%",
-                          background: "var(--clay-lavender)",
                           display: "flex",
                           alignItems: "center",
-                          justifyContent: "center",
-                          fontSize: "12px",
-                          fontWeight: 700,
-                          color: "var(--clay-ink)",
-                          flexShrink: 0,
+                          gap: "10px",
                         }}
                       >
-                        {u.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .substring(0, 2)
-                          .toUpperCase()}
-                      </div>
-                      {u.name}
-                    </div>
-                  </td>
-                  <td>{u.email}</td>
-                  <td>
-                    <span
-                      style={{
-                        fontSize: "12px",
-                        fontWeight: 600,
-                        padding: "2px 8px",
-                        borderRadius: "var(--r-xs)",
-                        background: "var(--clay-surface-soft)",
-                        color: "var(--clay-muted)",
-                      }}
-                    >
-                      {u.role?.name || "No Role"}
-                    </span>
-                  </td>
-                  <td style={{ color: "var(--clay-muted)" }}>
-                    {u.role?.name === "Super Admin"
-                      ? "All (System)"
-                      : u.warehouse
-                        ? `${u.warehouse.name} (${u.warehouse.code})`
-                        : "Unassigned"}
-                  </td>
-                  <td>
-                    <StatusBadge
-                      status={u.status === "ACTIVE" ? "Active" : "Inactive"}
-                    />
-                  </td>
-                  <td>
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "8px",
-                        flexWrap: "wrap",
-                      }}
-                    >
-                      {canEdit(u) && (
-                        <button
-                          onClick={() => openEditModal(u)}
+                        <div
                           style={{
-                            padding: "6px 10px",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
+                            width: "32px",
+                            height: "32px",
+                            borderRadius: "50%",
                             background: "var(--clay-lavender)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
                             fontSize: "12px",
-                            fontWeight: 600,
+                            fontWeight: 700,
+                            color: "var(--clay-ink)",
+                            flexShrink: 0,
                           }}
                         >
-                          Edit
-                        </button>
-                      )}
-
-                      {canChangeRole(u) && (
+                          {u.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .substring(0, 2)
+                            .toUpperCase()}
+                        </div>
+                        {u.name}
+                      </div>
+                    </td>
+                    <td>{u.email}</td>
+                    <td>
+                      <span
+                        style={{
+                          fontSize: "12px",
+                          fontWeight: 600,
+                          padding: "2px 8px",
+                          borderRadius: "var(--r-xs)",
+                          background: "var(--clay-surface-soft)",
+                          color: "var(--clay-muted)",
+                        }}
+                      >
+                        {u.role?.name || "No Role"}
+                      </span>
+                    </td>
+                    <td style={{ color: "var(--clay-muted)" }}>
+                      {u.role?.name === "Super Admin"
+                        ? "All (System)"
+                        : u.warehouse
+                          ? `${u.warehouse.name} (${u.warehouse.code})`
+                          : "Unassigned"}
+                    </td>
+                    <td>
+                      <StatusBadge
+                        status={u.status === "ACTIVE" ? "Active" : "Inactive"}
+                      />
+                    </td>
+                    <td>
+                      <div style={{ position: "relative" }}>
                         <button
-                          onClick={() => handleRoleChange(u)}
-                          style={{
-                            padding: "6px 10px",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            background: "var(--clay-peach)",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                          }}
+                          onClick={() => setActiveMenuId(activeMenuId === u._id ? null : u._id)}
+                          className="clay-btn-secondary"
+                          style={{ padding: "6px 12px", fontSize: "12px", display: "flex", alignItems: "center", gap: "6px" }}
                         >
-                          {u.role?.name === "Warehouse Operator"
-                            ? "Promote"
-                            : "Demote"}
+                          Actions <FaChevronDown size={10} />
                         </button>
-                      )}
-
-                      {canToggleStatus(u) && (
-                        <button
-                          onClick={() => handleToggleStatus(u._id)}
-                          style={{
-                            padding: "6px 10px",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            background: "var(--clay-mint)",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {u.status === "ACTIVE" ? "Deactivate" : "Activate"}
-                        </button>
-                      )}
-
-                      {canDelete(u) && (
-                        <button
-                          onClick={() => handleDeleteUser(u._id)}
-                          style={{
-                            padding: "6px 10px",
-                            border: "none",
-                            borderRadius: "8px",
-                            cursor: "pointer",
-                            background: "#ef4444",
-                            color: "white",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                          }}
-                        >
-                          Delete
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                        {activeMenuId === u._id && (
+                          <>
+                            <div
+                              onClick={() => setActiveMenuId(null)}
+                              style={{ position: "fixed", inset: 0, zIndex: 90 }}
+                            />
+                            <div style={{
+                              position: "absolute",
+                              right: 0,
+                              top: "100%",
+                              marginTop: "4px",
+                              background: "var(--clay-canvas)",
+                              borderRadius: "8px",
+                              border: "1.5px solid var(--clay-hairline)",
+                              boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                              zIndex: 100,
+                              minWidth: "140px",
+                              display: "flex",
+                              flexDirection: "column",
+                              padding: "4px",
+                            }}>
+                              {canEdit(u) && (
+                                <button
+                                  onClick={() => {
+                                    openEditModal(u);
+                                    setActiveMenuId(null);
+                                  }}
+                                  style={{
+                                    padding: "8px 12px",
+                                    textAlign: "left",
+                                    background: "none",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    color: "var(--clay-ink)",
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = "var(--clay-surface-soft)"}
+                                  onMouseLeave={(e) => e.target.style.background = "none"}
+                                >
+                                  Edit Profile
+                                </button>
+                              )}
+                              {canToggleStatus(u) && (
+                                <button
+                                  onClick={() => {
+                                    handleToggleStatus(u._id);
+                                    setActiveMenuId(null);
+                                  }}
+                                  style={{
+                                    padding: "8px 12px",
+                                    textAlign: "left",
+                                    background: "none",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    color: "var(--clay-ink)",
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = "var(--clay-surface-soft)"}
+                                  onMouseLeave={(e) => e.target.style.background = "none"}
+                                >
+                                  {u.status === "ACTIVE" ? "Deactivate" : "Activate"}
+                                </button>
+                              )}
+                              {canDelete(u) && (
+                                <button
+                                  onClick={() => {
+                                    handleDeleteUser(u._id);
+                                    setActiveMenuId(null);
+                                  }}
+                                  style={{
+                                    padding: "8px 12px",
+                                    textAlign: "left",
+                                    background: "none",
+                                    border: "none",
+                                    borderRadius: "6px",
+                                    cursor: "pointer",
+                                    fontSize: "12px",
+                                    fontWeight: 500,
+                                    color: "#ef4444",
+                                  }}
+                                  onMouseEnter={(e) => e.target.style.background = "rgba(239, 68, 68, 0.08)"}
+                                  onMouseLeave={(e) => e.target.style.background = "none"}
+                                >
+                                  Delete
+                                </button>
+                              )}
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </TableCard>
       )}
 
@@ -443,14 +481,7 @@ export default function Users() {
           }}
         >
           <div
-            style={{
-              background: "var(--clay-canvas)",
-              padding: "32px",
-              borderRadius: "var(--r-xl)",
-              width: "100%",
-              maxWidth: "520px",
-              border: "1.5px solid var(--clay-hairline)",
-            }}
+            className="p-6 sm:p-8 w-full max-w-[520px] bg-[var(--clay-canvas)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline mx-4"
           >
             <h3
               style={{
@@ -672,14 +703,7 @@ export default function Users() {
           }}
         >
           <div
-            style={{
-              background: "var(--clay-canvas)",
-              padding: "32px",
-              borderRadius: "var(--r-xl)",
-              width: "100%",
-              maxWidth: "520px",
-              border: "1.5px solid var(--clay-hairline)",
-            }}
+            className="p-6 sm:p-8 w-full max-w-[520px] bg-[var(--clay-canvas)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline mx-4"
           >
             <h3
               style={{
@@ -720,11 +744,25 @@ export default function Users() {
 
               <select
                 className="clay-select"
+                value={editRole}
+                onChange={(e) => setEditRole(e.target.value)}
+              >
+                <option value="">Select Role</option>
+                {roles.map((r) => (
+                  <option key={r._id} value={r._id}>
+                    {r.name}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                className="clay-select"
                 value={editWarehouse}
                 onChange={(e) => setEditWarehouse(e.target.value)}
+                disabled={!editRequiresWarehouse}
+                style={{ opacity: editRequiresWarehouse ? 1 : 0.5 }}
               >
                 <option value="">Select Warehouse</option>
-
                 {warehouses.map((w) => (
                   <option key={w._id} value={w._id}>
                     {w.name}

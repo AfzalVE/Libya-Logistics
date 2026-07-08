@@ -6,12 +6,16 @@ export default function Reports() {
   const [report, setReport] = useState(null);
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const limit = 20;
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [filters, setFilters] = useState({
     from: "",
     to: "",
     warehouse: "",
     status: "",
+    search: "",
   });
 
   const fetchWarehouses = async () => {
@@ -33,8 +37,12 @@ export default function Reports() {
       if (filters.to) params.append("to", filters.to);
       if (filters.warehouse) params.append("warehouse", filters.warehouse);
       if (filters.status) params.append("status", filters.status);
+      if (filters.search) params.append("search", filters.search);
 
+      params.append("page", page);
+      params.append("limit", limit);
       const res = await api.get(`/reports?${params.toString()}`);
+      // console.log(res.data)
 
       setReport(res.data);
     } catch (err) {
@@ -50,10 +58,22 @@ export default function Reports() {
 
   useEffect(() => {
     fetchReport();
-  }, [filters]);
+  }, [filters, page]);
 
   const handleApplyFilters = () => {
     fetchReport();
+  };
+
+  const handleClearFilters = () => {
+    setPage(1);
+    setSearchTerm("");
+    setFilters({
+      from: "",
+      to: "",
+      warehouse: "",
+      status: "",
+      search: "",
+    });
   };
 
   const handlePdfDownload = () => {
@@ -63,6 +83,7 @@ export default function Reports() {
     if (filters.to) params.append("to", filters.to);
     if (filters.warehouse) params.append("warehouse", filters.warehouse);
     if (filters.status) params.append("status", filters.status);
+    if (filters.search) params.append("search", filters.search);
 
     window.open(
       `${import.meta.env.VITE_API_URL}/reports/pdf?${params.toString()}`,
@@ -77,6 +98,7 @@ export default function Reports() {
     if (filters.to) params.append("to", filters.to);
     if (filters.warehouse) params.append("warehouse", filters.warehouse);
     if (filters.status) params.append("status", filters.status);
+    if (filters.search) params.append("search", filters.search);
 
     window.open(
       `${import.meta.env.VITE_API_URL}/reports/excel?${params.toString()}`,
@@ -137,6 +159,7 @@ export default function Reports() {
           display: "flex",
           gap: "10px",
           marginBottom: "20px",
+          flexWrap: "wrap",
         }}
       >
         <button
@@ -177,48 +200,70 @@ export default function Reports() {
           border: "1.5px solid var(--clay-hairline)",
           padding: "24px",
           marginBottom: "24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px"
         }}
       >
+        <div style={{ display: "flex", gap: "10px" }}>
+          <input
+            type="text"
+            placeholder="Search reports by shipment number, barcode, recipient/sender name or phone..."
+            className="clay-input"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ flex: 1 }}
+          />
+          <button
+            onClick={() => {
+              setPage(1);
+              setFilters(prev => ({ ...prev, search: searchTerm }));
+            }}
+            className="clay-btn-primary"
+            style={{ height: "42px", padding: "0 24px" }}
+          >
+            Search
+          </button>
+        </div>
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr 1fr 1fr auto",
-            gap: "16px",
-          }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_1fr_1fr_auto] gap-4"
         >
           <input
             type="date"
             className="clay-input"
             value={filters.from}
-            onChange={(e) =>
+            onChange={(e) => {
+              setPage(1);
               setFilters({
                 ...filters,
                 from: e.target.value,
               })
-            }
+            }}
           />
 
           <input
             type="date"
             className="clay-input"
             value={filters.to}
-            onChange={(e) =>
+            onChange={(e) => {
+              setPage(1);
               setFilters({
                 ...filters,
                 to: e.target.value,
               })
-            }
+            }}
           />
 
           <select
             className="clay-select"
             value={filters.warehouse}
-            onChange={(e) =>
+            onChange={(e) => {
+              setPage(1);
               setFilters({
                 ...filters,
                 warehouse: e.target.value,
               })
-            }
+            }}
           >
             <option value="">All Warehouses</option>
 
@@ -232,12 +277,13 @@ export default function Reports() {
           <select
             className="clay-select"
             value={filters.status}
-            onChange={(e) =>
+            onChange={(e) => {
+              setPage(1);
               setFilters({
                 ...filters,
                 status: e.target.value,
               })
-            }
+            }}
           >
             <option value="">All Statuses</option>
 
@@ -263,6 +309,12 @@ export default function Reports() {
           <button onClick={handleApplyFilters} className="clay-btn-primary">
             Apply
           </button>
+          <button
+            onClick={handleClearFilters}
+            className="clay-btn-secondary"
+          >
+            Clear
+          </button>
         </div>
       </div>
 
@@ -270,12 +322,7 @@ export default function Reports() {
 
       {report?.summary && (
         <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "repeat(4,1fr)",
-            gap: "16px",
-            marginBottom: "24px",
-          }}
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"
         >
           {[
             {
@@ -403,11 +450,7 @@ export default function Reports() {
       {/* EXPORT */}
 
       <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          marginBottom: "24px",
-        }}
+        className="flex flex-col sm:flex-row gap-3 sm:justify-between mb-6"
       >
         <button onClick={handlePdfDownload} className="clay-btn-primary">
           Generate PDF
@@ -428,70 +471,82 @@ export default function Reports() {
           overflow: "hidden",
         }}
       >
-        <table className="clay-table">
-          <thead>
-            <tr>
-              <th>Shipment</th>
-              <th>Date</th>
-              <th>Origin</th>
-              <th>Destination</th>
-              <th>Status</th>
-              <th>Weight</th>
-              <th>Value</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {report?.shipments?.map((shipment) => (
-              <tr key={shipment._id}>
-                <td>{shipment.shipmentNumber}</td>
-
-                <td>{new Date(shipment.bookingDate).toLocaleDateString()}</td>
-
-                <td>{shipment.originWarehouse?.name}</td>
-
-                <td>{shipment.destinationWarehouse?.name}</td>
-
-                <td>{shipment.currentStatus}</td>
-
-                <td>{shipment.weight}</td>
-
-                <td>{shipment.declaredValue}</td>
-              </tr>
-            ))}
-
-            {report?.shipments?.length > 0 && (
-              <tr
-                style={{
-                  background: "var(--clay-surface-soft)",
-                  fontWeight: 600,
-                }}
-              >
-                <td colSpan="4">Totals</td>
-
-                <td>{report.summary.totalShipments} shipments</td>
-
-                <td>{report.summary.totalWeight} kg</td>
-
-                <td>{report.summary.totalValue} LYD</td>
-              </tr>
-            )}
-
-            {report?.shipments?.length === 0 && (
+        <div className="overflow-x-auto">
+          <table className="clay-table">
+            <thead>
               <tr>
-                <td
-                  colSpan="7"
+                <th>Shipment</th>
+                <th>Date</th>
+                <th>Origin</th>
+                <th>Destination</th>
+                <th>Product Description</th>
+                <th>Status</th>
+                <th>Weight</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              {(!report?.shipments || report.shipments.length === 0) && (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: "center", padding: "40px", color: "var(--clay-muted)" }}>
+                    No shipments found matching the current search query or filter presets.
+                  </td>
+                </tr>
+              )}
+              {report?.shipments?.map((shipment) => (
+                <tr key={shipment._id}>
+                  <td>{shipment.shipmentNumber}</td>
+
+                  <td>{new Date(shipment.bookingDate).toLocaleDateString()}</td>
+
+                  <td>{shipment.originWarehouse?.name}</td>
+
+                  <td>{shipment.destinationWarehouse?.name}</td>
+
+                  <td>{shipment.goodsDescription}</td>
+
+                  <td>{shipment.currentStatus}</td>
+
+                  <td>{shipment.weight}</td>
+
+                  <td>{shipment.declaredValue}</td>
+                </tr>
+              ))}
+
+              {report?.shipments?.length > 0 && (
+                <tr
                   style={{
-                    textAlign: "center",
-                    padding: "40px",
+                    background: "var(--clay-surface-soft)",
+                    fontWeight: 600,
                   }}
                 >
-                  No shipments found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  <td colSpan="5">Totals</td>
+
+                  <td>{report.summary.totalShipments} shipments</td>
+
+                  <td>{report.summary.totalWeight} kg</td>
+
+                  <td>{report.summary.totalValue} LYD</td>
+                </tr>
+              )}
+
+              {report?.shipments?.length === 0 && (
+                <tr>
+                  <td
+                    colSpan="7"
+                    style={{
+                      textAlign: "center",
+                      padding: "40px",
+                    }}
+                  >
+                    No shipments found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {loading && (
@@ -504,6 +559,36 @@ export default function Reports() {
           Loading...
         </div>
       )}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          marginTop: 20,
+        }}
+      >
+        <button
+          className="clay-btn-secondary"
+          disabled={page === 1}
+          onClick={() => setPage((p) => p - 1)}
+        >
+          &lt;
+        </button>
+
+        <span>
+          Page {report?.pagination?.page || 1} of{" "}
+          {report?.pagination?.totalPages || 1}
+        </span>
+
+        <button
+          className="clay-btn-secondary"
+          disabled={
+            page >= (report?.pagination?.totalPages || 1)
+          }
+          onClick={() => setPage((p) => p + 1)}
+        >
+          &gt;
+        </button>
+      </div>
     </>
   );
 }

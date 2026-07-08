@@ -32,6 +32,11 @@ const useAuthStore = create((set) => ({
     set({ user: null, isAuthenticated: false, error: null });
   },
 
+  updateUserProfile: (updatedUser) => {
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    set({ user: updatedUser });
+  },
+
   // Facilitates fast one-click login for testing the full multi-role flow
   quickLogin: async (email) => {
     set({ loading: true, error: null });

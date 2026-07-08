@@ -75,6 +75,7 @@ export default function Dashboard() {
         api.get("/dashboard/charts"),
         api.get("/shipments")
       ]);
+      // console.log(shipmentsRes.data)
 
       setStats(statsRes.data);
 
@@ -86,7 +87,10 @@ export default function Dashboard() {
       setStatusDistribution(formattedChart);
 
       // Get latest 5 shipments
-      setRecentShipments(shipmentsRes.data.slice(0, 5));
+      const shipments = shipmentsRes.data.data || [];
+
+      setRecentShipments(shipments.slice(0, 5));
+      //setRecentShipments(shipmentsRes.data.slice(0, 5));
     } catch (err) {
       console.error("Error loading dashboard metrics:", err);
     } finally {
@@ -127,11 +131,10 @@ export default function Dashboard() {
 
       {/* Hero Band */}
       <div
-        className="clay-animate-fade-up"
+        className="clay-animate-fade-up p-6 sm:p-8 lg:p-[40px_48px]"
         style={{
           background: "var(--clay-surface-soft)",
           borderRadius: "var(--r-xl)",
-          padding: "40px 48px",
           border: "1.5px solid var(--clay-hairline)",
           position: "relative",
           overflow: "hidden",
@@ -173,7 +176,7 @@ export default function Dashboard() {
         </p>
 
         {/* Hero stats row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "32px" }}>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8">
           <HeroStat label="Active Warehouses" value={stats.warehouses} />
           <HeroStat label="Registered Staff" value={stats.users} />
           <HeroStat label="Active Shipments" value={pendingCount} />
@@ -182,7 +185,7 @@ export default function Dashboard() {
       </div>
 
       {/* KPI Feature Cards */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: "16px" }}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         <StatCard title="Total Bookings" value={stats.totalShipments} change="12%" icon="shipments" variantIndex={0} />
         <StatCard title="Active Cargo" value={pendingCount} change="4%" icon="pending" variantIndex={1} />
         <StatCard title="In Transit" value={stats.transit} change="8%" icon="transit" variantIndex={2} />
@@ -191,7 +194,7 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Tonal Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px" }}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <QuickCard label="Active Parcels" value={pendingCount} accent="var(--clay-pink)" />
         <QuickCard label="Released Today" value={stats.completed} accent="var(--clay-mint)" />
         <QuickCard label="Awaiting Pickup" value={stats.pickup} accent="var(--clay-peach)" />
@@ -199,7 +202,7 @@ export default function Dashboard() {
       </div>
 
       {/* Charts + Activity Feed */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 360px", gap: "20px" }}>
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[1fr_1fr_360px] gap-5">
 
         {/* Pie Chart */}
         <div style={{
@@ -277,7 +280,9 @@ export default function Dashboard() {
         </div>
 
         {/* Activity Feed */}
-        <ActivityFeed />
+        <div className="lg:col-span-2 xl:col-span-1">
+          <ActivityFeed />
+        </div>
 
       </div>
 
@@ -300,44 +305,46 @@ export default function Dashboard() {
           </h2>
         </div>
 
-        <table className="clay-table">
-          <thead>
-            <tr>
-              <th>Warehouse</th>
-              <th>Shipments Handled</th>
-              <th>Completed Deliveries</th>
-              <th>Fulfillment Performance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {warehousePerformance.map((w) => (
-              <tr key={w.warehouse}>
-                <td>
-                  <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--clay-mint)" }} />
-                    <span style={{ fontWeight: 500, color: "var(--clay-ink)" }}>{w.warehouse}</span>
-                  </div>
-                </td>
-                <td>{w.shipments.toLocaleString()}</td>
-                <td>{w.delivered.toLocaleString()}</td>
-                <td>
-                  <span style={{
-                    display: "inline-flex", alignItems: "center", gap: "6px",
-                    padding: "4px 12px",
-                    background: "var(--clay-surface-card)",
-                    borderRadius: "999px",
-                    fontSize: "13px", fontWeight: 600,
-                    color: "var(--clay-ink)",
-                    border: "1px solid var(--clay-hairline)",
-                  }}>
-                    <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#22c55e" }} />
-                    {w.performance}
-                  </span>
-                </td>
+        <div className="overflow-x-auto">
+          <table className="clay-table">
+            <thead>
+              <tr>
+                <th>Warehouse</th>
+                <th>Shipments Handled</th>
+                <th>Completed Deliveries</th>
+                <th>Fulfillment Performance</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {warehousePerformance.map((w) => (
+                <tr key={w.warehouse}>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "var(--clay-mint)" }} />
+                      <span style={{ fontWeight: 500, color: "var(--clay-ink)" }}>{w.warehouse}</span>
+                    </div>
+                  </td>
+                  <td>{w.shipments.toLocaleString()}</td>
+                  <td>{w.delivered.toLocaleString()}</td>
+                  <td>
+                    <span style={{
+                      display: "inline-flex", alignItems: "center", gap: "6px",
+                      padding: "4px 12px",
+                      background: "var(--clay-surface-card)",
+                      borderRadius: "999px",
+                      fontSize: "13px", fontWeight: 600,
+                      color: "var(--clay-ink)",
+                      border: "1px solid var(--clay-hairline)",
+                    }}>
+                      <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "#22c55e" }} />
+                      {w.performance}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Recent Shipments Table */}
@@ -359,32 +366,34 @@ export default function Dashboard() {
           </h3>
         </div>
 
-        <table className="clay-table">
-          <thead>
-            <tr>
-              <th>Shipment ID</th>
-              <th>Sender</th>
-              <th>Receiver</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {recentShipments.map((item) => (
-              <tr key={item._id}>
-                <td>
-                  <span style={{ fontWeight: 600, color: "var(--clay-ink)", fontFamily: "monospace", fontSize: "13px" }}>
-                    {item.shipmentNumber}
-                  </span>
-                </td>
-                <td>{item.senderCustomer?.name}</td>
-                <td>{item.receiverCustomer?.name}</td>
-                <td>
-                  <StatusBadge status={item.currentStatus} />
-                </td>
+        <div className="overflow-x-auto">
+          <table className="clay-table">
+            <thead>
+              <tr>
+                <th>Shipment ID</th>
+                <th>Sender</th>
+                <th>Receiver</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {recentShipments.map((item) => (
+                <tr key={item._id}>
+                  <td>
+                    <span style={{ fontWeight: 600, color: "var(--clay-ink)", fontFamily: "monospace", fontSize: "13px" }}>
+                      {item.shipmentNumber}
+                    </span>
+                  </td>
+                  <td>{item.senderCustomer?.name}</td>
+                  <td>{item.receiverCustomer?.name}</td>
+                  <td>
+                    <StatusBadge status={item.currentStatus} />
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
     </div>

@@ -10,7 +10,7 @@ const useShipmentStore = create((set) => ({
     set({ loading: true });
     try {
       const res = await api.get("/shipments");
-      const shipments = res.data;
+      const shipments = res.data.data || [];
 
       // Extract and aggregate activities from all shipments' status histories
       const allActivities = [];

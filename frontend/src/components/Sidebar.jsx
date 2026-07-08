@@ -6,7 +6,8 @@ import {
   FaCog,
   FaHome,
   FaTruck,
-  FaSignOutAlt
+  FaSignOutAlt,
+  FaTimes
 } from "react-icons/fa";
 
 import { NavLink, useNavigate } from "react-router-dom";
@@ -21,7 +22,7 @@ const links = [
   { icon: <FaCog />,      label: "Settings",   path: "/settings" },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, setIsOpen }) {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
 
@@ -52,59 +53,72 @@ export default function Sidebar() {
   };
 
   return (
-    <aside style={{
-      position: "fixed",
-      left: 0, top: 0,
-      height: "100vh",
-      width: "280px",
-      background: "var(--clay-teal)",
-      display: "flex",
-      flexDirection: "column",
-      zIndex: 50,
-    }}>
+    <>
+      {/* Backdrop for mobile */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
 
-      {/* Logo */}
-      <div style={{
-        padding: "28px 24px",
-        borderBottom: "1px solid rgba(255,255,255,0.08)",
-      }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+      <aside 
+        className={`fixed left-0 top-0 h-screen w-[280px] bg-clay-teal flex flex-col z-50 transition-transform duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
 
-          {/* Logo badge — ochre accent */}
-          <div style={{
-            height: "48px", width: "48px",
-            borderRadius: "14px",
-            background: "var(--clay-ochre)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--clay-ink)",
-            flexShrink: 0,
-          }}>
-            <FaTruck size={20} />
+        {/* Logo */}
+        <div style={{
+          padding: "28px 24px",
+          borderBottom: "1px solid rgba(255,255,255,0.08)",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "14px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+              {/* Logo badge — ochre accent */}
+              <div style={{
+                height: "48px", width: "48px",
+                borderRadius: "14px",
+                background: "var(--clay-ochre)",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                color: "var(--clay-ink)",
+                flexShrink: 0,
+              }}>
+                <FaTruck size={20} />
+              </div>
+
+              <div>
+                <h1 style={{
+                  fontWeight: 600,
+                  fontSize: "16px",
+                  color: "#ffffff",
+                  lineHeight: "1.2",
+                  margin: 0,
+                }}>
+                  Libya Logistics
+                </h1>
+                <p style={{
+                  fontSize: "12px",
+                  color: "rgba(255,255,255,0.45)",
+                  marginTop: "3px",
+                  fontWeight: 500,
+                  letterSpacing: "0.3px",
+                }}>
+                  {roleName}
+                </p>
+              </div>
+            </div>
+
+            {/* Close button for mobile */}
+            <button
+              onClick={() => setIsOpen(false)}
+              className="lg:hidden p-2 text-white/60 hover:text-white rounded-md hover:bg-white/10 flex items-center"
+              style={{ border: "none", background: "none", cursor: "pointer" }}
+            >
+              <FaTimes size={18} />
+            </button>
           </div>
-
-          <div>
-            <h1 style={{
-              fontWeight: 600,
-              fontSize: "16px",
-              color: "#ffffff",
-              lineHeight: "1.2",
-              margin: 0,
-            }}>
-              Libya Logistics
-            </h1>
-            <p style={{
-              fontSize: "12px",
-              color: "rgba(255,255,255,0.45)",
-              marginTop: "3px",
-              fontWeight: 500,
-              letterSpacing: "0.3px",
-            }}>
-              {roleName}
-            </p>
-          </div>
-
         </div>
-      </div>
 
       {/* Quick Stats / Context */}
       <div style={{
@@ -271,5 +285,6 @@ export default function Sidebar() {
       </div>
 
     </aside>
+    </>
   );
 }

@@ -33,16 +33,45 @@ export default function Shipments() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Search & Pagination States
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalRecords, setTotalRecords] = useState(0);
+
   const fetchShipments = async () => {
     try {
       setLoading(true);
-      const res = await api.get("/shipments");
-      setShipments(res.data);
+      const res = await api.get(`/shipments?page=${currentPage}&limit=10&search=${searchQuery}`);
+      if (res.data && res.data.data) {
+        setShipments(res.data.data);
+        setTotalPages(res.data.pagination.totalPages);
+        setTotalRecords(res.data.pagination.totalRecords);
+      } else {
+        setShipments(res.data || []);
+      }
     } catch (err) {
       console.error("Error fetching shipments:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchShipments();
+  }, [currentPage, searchQuery]);
+
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    setCurrentPage(1);
+    setSearchQuery(searchTerm);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    setSearchQuery("");
+    setCurrentPage(1);
   };
 
   const fetchWarehouses = async () => {
@@ -60,7 +89,6 @@ export default function Shipments() {
   };
 
   useEffect(() => {
-    fetchShipments();
     fetchWarehouses();
   }, [userWarehouseId]);
 
@@ -200,124 +228,197 @@ export default function Shipments() {
             overflow: "hidden",
           }}
         >
-          <table className="clay-table">
-            <thead>
-              <tr>
-                <th>Shipment No</th>
-                <th>Sender</th>
-                <th>Receiver</th>
-                <th>Origin</th>
-                <th>Destination</th>
-                <th>Current Loc</th>
-                <th>Status</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {shipments.map((s) => {
-                const canStore =
-                  isOperator &&
-                  s.currentStatus === "BOOKED" &&
-                  s.originWarehouse?._id === userWarehouseId;
+          <div style={{
+            padding: "16px 20px",
+            borderBottom: "1.5px solid var(--clay-hairline)",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: "12px",
+          }}>
+            <div>
+              <p style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--clay-muted)", margin: "0 0 2px 0" }}>
+                Logistics Registry
+              </p>
+              <h2 style={{ fontSize: "18px", fontWeight: 600, color: "var(--clay-ink)", margin: 0, letterSpacing: "-0.2px" }}>
+                Shipments Directory
+              </h2>
+            </div>
+            
+            <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "8px", maxWidth: "360px", width: "100%" }}>
+              <input
+                type="text"
+                placeholder="Search shipments..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="clay-input"
+                style={{ height: "36px", fontSize: "13px" }}
+              />
+              <button type="submit" className="clay-btn-primary" style={{ height: "36px", padding: "0 16px", fontSize: "13px" }}>
+                Search
+              </button>
+              {searchQuery && (
+                <button type="button" onClick={handleClearSearch} className="clay-btn-secondary" style={{ height: "36px", padding: "0 12px", fontSize: "13px" }}>
+                  Clear
+                </button>
+              )}
+            </form>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="clay-table">
+              <thead>
+                <tr>
+                  <th>Shipment No</th>
+                  <th>Sender</th>
+                  <th>Receiver</th>
+                  <th>Origin</th>
+                  <th>Destination</th>
+                  <th>Current Loc</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {shipments.map((s) => {
+                  const canStore =
+                    isOperator &&
+                    s.currentStatus === "BOOKED" &&
+                    s.originWarehouse?._id === userWarehouseId;
 
-                return (
-                  <tr key={s._id}>
-                    <td>
-                      <Link
-                        to={`/shipments/${s._id}`}
-                        style={{
-                          fontWeight: 600,
-                          color: "var(--clay-ink)",
-                          textDecoration: "none",
-                          fontFamily: "monospace",
-                          fontSize: "13px",
-                          borderBottom: "1.5px solid transparent",
-                        }}
-                        onMouseEnter={(e) =>
-                          (e.currentTarget.style.borderBottomColor =
-                            "var(--clay-ink)")
-                        }
-                        onMouseLeave={(e) =>
-                          (e.currentTarget.style.borderBottomColor =
-                            "transparent")
-                        }
-                      >
-                        {s.shipmentNumber}
-                      </Link>
-                    </td>
-                    <td>{s.senderCustomer?.name}</td>
-                    <td>{s.receiverCustomer?.name}</td>
-                    <td>{s.originWarehouse?.city}</td>
-                    <td>{s.destinationWarehouse?.city}</td>
-                    <td>{s.currentWarehouse?.name || "Transit"}</td>
-                    <td>
-                      <StatusBadge status={s.currentStatus} />
-                    </td>
-                    <td>
-                      {canStore ? (
-                        <button
-                          onClick={() => handleQuickStore(s._id)}
-                          className="clay-btn-primary"
+                  return (
+                    <tr key={s._id}>
+                      <td>
+                        <Link
+                          to={`/shipments/${s._id}`}
                           style={{
-                            height: "30px",
-                            fontSize: "11px",
-                            padding: "0 12px",
-                            borderRadius: "8px",
+                            fontWeight: 600,
+                            color: "var(--clay-ink)",
+                            textDecoration: "none",
+                            fontFamily: "monospace",
+                            fontSize: "13px",
+                            borderBottom: "1.5px solid transparent",
                           }}
+                          onMouseEnter={(e) =>
+                            (e.currentTarget.style.borderBottomColor =
+                              "var(--clay-ink)")
+                          }
+                          onMouseLeave={(e) =>
+                            (e.currentTarget.style.borderBottomColor =
+                              "transparent")
+                          }
                         >
-                          Store in Wh
-                        </button>
-                      ) : (
-                        <div
-                          style={{
-                            display: "flex",
-                            gap: "8px",
-                            flexWrap: "wrap",
-                          }}
-                        >
-                          <Link
-                            to={`/shipments/${s._id}`}
-                            className="clay-btn-secondary"
+                          {s.shipmentNumber}
+                        </Link>
+                      </td>
+                      <td>{s.senderCustomer?.name}</td>
+                      <td>{s.receiverCustomer?.name}</td>
+                      <td>{s.originWarehouse?.city}</td>
+                      <td>{s.destinationWarehouse?.city}</td>
+                      <td>{s.currentWarehouse?.name || "Transit"}</td>
+                      <td>
+                        <StatusBadge status={s.currentStatus} />
+                      </td>
+                      <td>
+                        {canStore ? (
+                          <button
+                            onClick={() => handleQuickStore(s._id)}
+                            className="clay-btn-primary"
                             style={{
                               height: "30px",
                               fontSize: "11px",
                               padding: "0 12px",
                               borderRadius: "8px",
-                              display: "inline-flex",
-                              alignItems: "center",
-                              textDecoration: "none",
                             }}
                           >
-                            Manage Flow
-                          </Link>
-
-                          {s.currentStatus === "COMPLETED" && (
-                            <button
-                              onClick={() =>
-                                window.open(
-                                  `${import.meta.env.VITE_API_URL}/shipments/${s._id}/invoice`,
-                                  "_blank",
-                                )
-                              }
-                              className="clay-btn-primary"
+                            Store in Wh
+                          </button>
+                        ) : (
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: "8px",
+                              flexWrap: "wrap",
+                            }}
+                          >
+                            <Link
+                              to={`/shipments/${s._id}`}
+                              className="clay-btn-secondary"
                               style={{
                                 height: "30px",
                                 fontSize: "11px",
                                 padding: "0 12px",
                                 borderRadius: "8px",
+                                display: "inline-flex",
+                                alignItems: "center",
+                                textDecoration: "none",
                               }}
                             >
-                              Invoice
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                              Manage Flow
+                            </Link>
+
+                            {s.currentStatus === "COMPLETED" && (
+                              <button
+                                onClick={() =>
+                                  window.open(
+                                    `${import.meta.env.VITE_API_URL}/shipments/${s._id}/invoice`,
+                                    "_blank",
+                                  )
+                                }
+                                className="clay-btn-primary"
+                                style={{
+                                  height: "30px",
+                                  fontSize: "11px",
+                                  padding: "0 12px",
+                                  borderRadius: "8px",
+                                }}
+                              >
+                                Invoice
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div style={{
+              padding: "16px 20px",
+              borderTop: "1.5px solid var(--clay-hairline)",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }} className="flex-col sm:flex-row gap-3 sm:gap-0">
+              <span style={{ fontSize: "13px", color: "var(--clay-muted)" }}>
+                Showing Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({totalRecords} shipments total)
+              </span>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  className="clay-btn-secondary"
+                  style={{ height: "34px", padding: "0 12px", fontSize: "12px", opacity: currentPage === 1 ? 0.5 : 1 }}
+                >
+                  Previous
+                </button>
+                <button
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  className="clay-btn-secondary"
+                  style={{ height: "34px", padding: "0 12px", fontSize: "12px", opacity: currentPage === totalPages ? 0.5 : 1 }}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -338,16 +439,7 @@ export default function Shipments() {
           }}
         >
           <div
-            style={{
-              background: "var(--clay-canvas)",
-              padding: "32px",
-              borderRadius: "var(--r-xl)",
-              width: "100%",
-              maxWidth: "780px",
-              border: "1.5px solid var(--clay-hairline)",
-              maxHeight: "90vh",
-              overflowY: "auto",
-            }}
+            className="p-4 sm:p-8 w-full max-w-[780px] max-h-[90vh] overflow-y-auto bg-[var(--clay-canvas)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline"
           >
             <h3
               style={{
@@ -424,13 +516,7 @@ export default function Shipments() {
               </div>
 
               {/* Sender & Receiver Forms side-by-side */}
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "20px",
-                }}
-              >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {/* Sender Column */}
                 <div
                   style={{
@@ -587,15 +673,9 @@ export default function Shipments() {
                 >
                   Goods & Package Details
                 </h4>
-                <div
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: "2fr 1fr 1fr 1fr",
-                    gap: "10px",
-                    alignItems: "flex-end",
-                  }}
-                >
+                <div className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr_1fr] gap-2.5 items-end">
                   <div
+                    className="col-span-2 md:col-span-1"
                     style={{
                       display: "flex",
                       flexDirection: "column",

@@ -5,12 +5,9 @@ export default function PageHeader({
   onButtonClick,
 }) {
   return (
-    <div style={{
-      display: "flex",
-      alignItems: "flex-end",
-      justifyContent: "space-between",
-      marginBottom: "32px",
-    }}>
+    <div 
+      className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 sm:gap-0 mb-8"
+    >
 
       <div>
         {/* Section label */}
@@ -45,9 +42,8 @@ export default function PageHeader({
 
       {buttonText && (
         <button
-          className="clay-btn-primary"
+          className="clay-btn-primary ml-0 sm:ml-6 self-start sm:self-auto"
           onClick={onButtonClick}
-          style={{ marginLeft: "24px" }}
         >
           {buttonText}
         </button>

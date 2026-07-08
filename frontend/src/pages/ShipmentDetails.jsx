@@ -182,17 +182,7 @@ export default function ShipmentDetails() {
 
       {/* Header Card */}
       <div
-        style={{
-          background: "var(--clay-surface-soft)",
-          borderRadius: "var(--r-xl)",
-          border: "1.5px solid var(--clay-hairline)",
-          padding: "36px 40px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "relative",
-          overflow: "hidden",
-        }}
+        className="flex flex-col md:flex-row md:items-center justify-between p-6 md:p-[36px_40px] gap-6 md:gap-0 relative overflow-hidden bg-[var(--clay-surface-soft)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline"
       >
         {/* Decorative circle */}
         <div
@@ -246,20 +236,10 @@ export default function ShipmentDetails() {
         </div>
 
         <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: "12px",
-          }}
+          className="flex flex-col items-start md:items-end gap-3"
         >
           <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              gap: "10px",
-              alignItems: "flex-end",
-            }}
+            className="flex flex-col items-start md:items-end gap-2.5"
           >
             <StatusBadge status={currentStatus} />
 
@@ -301,15 +281,7 @@ export default function ShipmentDetails() {
         canReadyPickup ||
         canCompletePickup) && (
         <div
-          style={{
-            background: "var(--clay-surface-card)",
-            borderRadius: "var(--r-lg)",
-            padding: "24px 28px",
-            borderLeft: "5px solid var(--clay-pink)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
+          className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-[var(--clay-surface-card)] rounded-[var(--r-lg)] p-[24px_28px] border-l-[5px] border-l-clay-pink"
         >
           <div>
             <h4
@@ -405,13 +377,7 @@ export default function ShipmentDetails() {
       )}
 
       {/* Info Cards Grid */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(4, 1fr)",
-          gap: "16px",
-        }}
-      >
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
             label: "Origin Location",
@@ -472,13 +438,7 @@ export default function ShipmentDetails() {
       </div>
 
       {/* Main Grid: Info Details & Track Timeline */}
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1.5fr 1fr",
-          gap: "24px",
-        }}
-      >
+      <div className="grid grid-cols-1 lg:grid-cols-[1.5fr_1fr] gap-6">
         {/* Left: Package details */}
         <div
           style={{
@@ -503,13 +463,7 @@ export default function ShipmentDetails() {
               Package & Shipment Specifications
             </h3>
 
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "16px",
-              }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p
                   style={{
@@ -616,14 +570,7 @@ export default function ShipmentDetails() {
               >
                 Delivery Release Receipt
               </h4>
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
-                  gap: "12px",
-                  fontSize: "13px",
-                }}
-              >
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[13px]">
                 <div>
                   <p
                     style={{ color: "var(--clay-muted)", margin: "0 0 2px 0" }}
