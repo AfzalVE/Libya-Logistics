@@ -165,12 +165,19 @@ export async function toggleUserStatus(req, res) {
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("role");
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (user.role?.name === "Super Admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Super Admin cannot be suspended",
       });
     }
 
@@ -194,15 +201,20 @@ export async function toggleUserStatus(req, res) {
 export async function changeUserRole(req, res) {
   try {
     const { id } = req.params;
-
     const { roleName } = req.body;
-
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("role");
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (user.role?.name === "Super Admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Super Admin role cannot be changed",
       });
     }
 
@@ -243,12 +255,19 @@ export async function deleteUser(req, res) {
   try {
     const { id } = req.params;
 
-    const user = await User.findById(id);
+    const user = await User.findById(id).populate("role");
 
     if (!user) {
       return res.status(404).json({
         success: false,
         message: "User not found",
+      });
+    }
+
+    if (user.role?.name === "Super Admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Super Admin cannot be deleted",
       });
     }
 
