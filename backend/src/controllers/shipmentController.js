@@ -1,5 +1,7 @@
 import Shipment from "../models/Shipment.js";
 import { generateShipmentNumber } from "../utils/generateShipmentNumber.js";
+import PDFDocument from "pdfkit";
+import Setting from "../models/Setting.js";
 
 export async function createShipment(req, res) {
   try {
@@ -17,9 +19,9 @@ export async function createShipment(req, res) {
           status: "BOOKED",
           warehouse: req.body.originWarehouse,
           remarks: req.body.remarks || "Shipment booked and registered",
-          updatedBy: req.body.bookedBy
-        }
-      ]
+          updatedBy: req.body.bookedBy,
+        },
+      ],
     });
 
     const populated = await Shipment.findById(shipment._id)
@@ -31,12 +33,12 @@ export async function createShipment(req, res) {
 
     res.status(201).json({
       success: true,
-      shipment: populated
+      shipment: populated,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 }
@@ -55,7 +57,7 @@ export async function getShipments(req, res) {
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 }
@@ -73,14 +75,16 @@ export async function getShipmentById(req, res) {
       .populate("statusHistory.warehouse", "name");
 
     if (!shipment) {
-      return res.status(404).json({ success: false, message: "Shipment not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Shipment not found" });
     }
 
     res.json(shipment);
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
     });
   }
 }
@@ -91,7 +95,9 @@ export async function updateStatus(req, res) {
 
     const shipment = await Shipment.findById(req.params.id);
     if (!shipment) {
-      return res.status(404).json({ success: false, message: "Shipment not found" });
+      return res
+        .status(404)
+        .json({ success: false, message: "Shipment not found" });
     }
 
     shipment.currentStatus = status;
@@ -105,7 +111,7 @@ export async function updateStatus(req, res) {
       warehouse: warehouse || shipment.currentWarehouse,
       remarks: remarks || `Status updated to ${status}`,
       updatedBy: updatedBy || null,
-      createdAt: new Date()
+      createdAt: new Date(),
     });
 
     // If status is COMPLETED, save the customer pickup details
@@ -118,7 +124,7 @@ export async function updateStatus(req, res) {
         signaturePath: pickup.signaturePath || "",
         photoPath: pickup.photoPath || "",
         pickupDate: new Date(),
-        receivedBy: updatedBy
+        receivedBy: updatedBy,
       };
     }
 
@@ -136,12 +142,258 @@ export async function updateStatus(req, res) {
 
     res.json({
       success: true,
-      shipment: populated
+      shipment: populated,
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: error.message
+      message: error.message,
+    });
+  }
+}
+
+export async function downloadInvoicePdf(req, res) {
+  try {
+    const shipment = await Shipment.findById(req.params.id)
+      .populate("originWarehouse")
+      .populate("destinationWarehouse")
+      .populate("currentWarehouse")
+      .populate("senderCustomer")
+      .populate("receiverCustomer")
+      .populate("bookedBy", "name")
+      .populate("pickup.receivedBy", "name")
+      .populate("statusHistory.updatedBy", "name")
+      .populate("statusHistory.warehouse", "name");
+
+    if (!shipment) {
+      return res.status(404).json({
+        success: false,
+        message: "Shipment not found",
+      });
+    }
+
+    if (shipment.currentStatus !== "COMPLETED") {
+      return res.status(400).json({
+        success: false,
+        message: "Invoice available only for completed shipments",
+      });
+    }
+
+    const settings = await Setting.findOne();
+
+    const doc = new PDFDocument({
+      margin: 50,
+      size: "A4",
+    });
+
+    res.setHeader("Content-Type", "application/pdf");
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=${shipment.shipmentNumber}.pdf`,
+    );
+
+    doc.pipe(res);
+
+    // =====================================================
+    // HEADER
+    // =====================================================
+
+    doc.fontSize(24).text(settings?.companyName || "LIBYA LOGISTICS", {
+      align: "center",
+    });
+
+    doc.moveDown(0.5);
+
+    doc.fontSize(16).text("Shipment Invoice", {
+      align: "center",
+    });
+
+    doc.moveDown();
+
+    if (settings) {
+      doc.fontSize(10).text(settings.address || "", { align: "center" });
+
+      doc.text(`${settings.phone || ""}   ${settings.email || ""}`, {
+        align: "center",
+      });
+    }
+
+    doc.moveDown(2);
+
+    // =====================================================
+    // SHIPMENT INFO
+    // =====================================================
+
+    doc.fontSize(18).text("Shipment Information");
+
+    doc.moveDown();
+
+    doc.fontSize(11);
+
+    doc.text(`Shipment Number: ${shipment.shipmentNumber}`);
+
+    doc.text(
+      `Booking Date: ${new Date(shipment.bookingDate).toLocaleString()}`,
+    );
+
+    doc.text(`Current Status: ${shipment.currentStatus}`);
+
+    doc.text(`Barcode: ${shipment.barcode || "-"}`);
+
+    doc.text(`QR Code: ${shipment.qrCode || "-"}`);
+
+    doc.moveDown();
+
+    // =====================================================
+    // ROUTE DETAILS
+    // =====================================================
+
+    doc.fontSize(18).text("Route Information");
+
+    doc.moveDown();
+
+    doc.fontSize(11);
+
+    doc.text(`Origin Warehouse: ${shipment.originWarehouse?.name || "-"}`);
+
+    doc.text(
+      `Destination Warehouse: ${shipment.destinationWarehouse?.name || "-"}`,
+    );
+
+    doc.text(`Current Warehouse: ${shipment.currentWarehouse?.name || "-"}`);
+
+    doc.moveDown();
+
+    // =====================================================
+    // SENDER
+    // =====================================================
+
+    doc.fontSize(18).text("Sender Details");
+
+    doc.moveDown();
+
+    doc.fontSize(11);
+
+    doc.text(`Name: ${shipment.senderCustomer?.name || "-"}`);
+
+    doc.text(`Phone: ${shipment.senderCustomer?.mobile || "-"}`);
+
+    doc.text(`Address: ${shipment.senderCustomer?.address || "-"}`);
+
+    doc.text(`National ID: ${shipment.senderCustomer?.nationalId || "-"}`);
+
+    doc.moveDown();
+
+    // =====================================================
+    // RECEIVER
+    // =====================================================
+
+    doc.fontSize(18).text("Receiver Details");
+
+    doc.moveDown();
+
+    doc.fontSize(11);
+
+    doc.text(`Name: ${shipment.receiverCustomer?.name || "-"}`);
+
+    doc.text(`Phone: ${shipment.receiverCustomer?.mobile || "-"}`);
+
+    doc.text(`Address: ${shipment.receiverCustomer?.address || "-"}`);
+
+    doc.text(`National ID: ${shipment.receiverCustomer?.nationalId || "-"}`);
+
+    doc.moveDown();
+
+    // =====================================================
+    // PACKAGE DETAILS
+    // =====================================================
+
+    doc.fontSize(18).text("Package Details");
+
+    doc.moveDown();
+
+    doc.fontSize(11);
+
+    doc.text(`Goods Description: ${shipment.goodsDescription || "-"}`);
+
+    doc.text(`Package Count: ${shipment.packageCount}`);
+
+    doc.text(`Weight: ${shipment.weight} kg`);
+
+    doc.text(`Declared Value: ${shipment.declaredValue} LYD`);
+
+    doc.moveDown();
+
+    // =====================================================
+    // PICKUP
+    // =====================================================
+
+    if (shipment.pickup) {
+      doc.fontSize(18).text("Delivery Confirmation");
+
+      doc.moveDown();
+
+      doc.fontSize(11);
+
+      doc.text(`Collected By: ${shipment.pickup.receiverName || "-"}`);
+
+      doc.text(`Phone: ${shipment.pickup.receiverPhone || "-"}`);
+
+      doc.text(`National ID: ${shipment.pickup.nationalId || "-"}`);
+
+      doc.text(
+        `Pickup Date: ${
+          shipment.pickup.pickupDate
+            ? new Date(shipment.pickup.pickupDate).toLocaleString()
+            : "-"
+        }`,
+      );
+
+      doc.text(`Remarks: ${shipment.pickup.remarks || "-"}`);
+
+      doc.moveDown();
+    }
+
+    // =====================================================
+    // TIMELINE
+    // =====================================================
+
+    doc.fontSize(18).text("Shipment Timeline");
+
+    doc.moveDown();
+
+    shipment.statusHistory.forEach((item) => {
+      doc.fontSize(10);
+
+      doc.text(
+        `${item.status} | ${item.warehouse?.name || "Transit"} | ${new Date(
+          item.createdAt,
+        ).toLocaleString()}`,
+      );
+
+      if (item.remarks) {
+        doc.text(`Remarks: ${item.remarks}`);
+      }
+
+      doc.moveDown(0.5);
+    });
+
+    doc.moveDown(2);
+
+    doc.fontSize(9).text(`Generated on ${new Date().toLocaleString()}`, {
+      align: "center",
+    });
+
+    doc.text("System Generated Invoice", {
+      align: "center",
+    });
+
+    doc.end();
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
     });
   }
 }
