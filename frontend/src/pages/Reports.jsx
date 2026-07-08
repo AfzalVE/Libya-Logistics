@@ -50,7 +50,7 @@ export default function Reports() {
 
   useEffect(() => {
     fetchReport();
-  }, []);
+  }, [filters]);
 
   const handleApplyFilters = () => {
     fetchReport();
@@ -84,12 +84,89 @@ export default function Reports() {
     );
   };
 
+  const applyPreset = (type) => {
+    const today = new Date();
+
+    let from = "";
+    let to = "";
+
+    if (type === "today") {
+      from = today.toISOString().split("T")[0];
+      to = from;
+    }
+
+    if (type === "7days") {
+      const start = new Date();
+      start.setDate(today.getDate() - 7);
+
+      from = start.toISOString().split("T")[0];
+      to = today.toISOString().split("T")[0];
+    }
+
+    if (type === "30days") {
+      const start = new Date();
+      start.setDate(today.getDate() - 30);
+
+      from = start.toISOString().split("T")[0];
+      to = today.toISOString().split("T")[0];
+    }
+
+    if (type === "month") {
+      const start = new Date(today.getFullYear(), today.getMonth(), 1);
+
+      from = start.toISOString().split("T")[0];
+      to = today.toISOString().split("T")[0];
+    }
+
+    setFilters((prev) => ({
+      ...prev,
+      from,
+      to,
+    }));
+  };
+
   return (
     <>
       <PageHeader
         title="Reports"
         subtitle="Generate and export operational reports"
       />
+
+      <div
+        style={{
+          display: "flex",
+          gap: "10px",
+          marginBottom: "20px",
+        }}
+      >
+        <button
+          className="clay-btn-secondary"
+          onClick={() => applyPreset("today")}
+        >
+          Today
+        </button>
+
+        <button
+          className="clay-btn-secondary"
+          onClick={() => applyPreset("7days")}
+        >
+          Last 7 Days
+        </button>
+
+        <button
+          className="clay-btn-secondary"
+          onClick={() => applyPreset("30days")}
+        >
+          Last 30 Days
+        </button>
+
+        <button
+          className="clay-btn-secondary"
+          onClick={() => applyPreset("month")}
+        >
+          This Month
+        </button>
+      </div>
 
       {/* FILTERS */}
 
@@ -249,6 +326,80 @@ export default function Reports() {
         </div>
       )}
 
+      {report?.shipments?.length > 0 && (
+        <div
+          style={{
+            background: "var(--clay-canvas)",
+            border: "1.5px solid var(--clay-hairline)",
+            borderRadius: "var(--r-lg)",
+            padding: "24px",
+            marginBottom: "24px",
+          }}
+        >
+          <h3
+            style={{
+              marginTop: 0,
+              marginBottom: "20px",
+            }}
+          >
+            Status Breakdown
+          </h3>
+
+          <div
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit,minmax(140px,1fr))",
+              gap: "12px",
+            }}
+          >
+            {[
+              "BOOKED",
+              "STORED",
+              "READY_FOR_DISPATCH",
+              "DISPATCHED",
+              "IN_TRANSIT",
+              "RECEIVED",
+              "READY_FOR_PICKUP",
+              "COMPLETED",
+              "CANCELLED",
+            ].map((status) => {
+              const count = report.shipments.filter(
+                (s) => s.currentStatus === status,
+              ).length;
+
+              return (
+                <div
+                  key={status}
+                  style={{
+                    padding: "16px",
+                    border: "1px solid var(--clay-hairline)",
+                    borderRadius: "var(--r-md)",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "12px",
+                      color: "var(--clay-muted)",
+                    }}
+                  >
+                    {status}
+                  </div>
+
+                  <div
+                    style={{
+                      fontSize: "26px",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {count}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* EXPORT */}
 
       <div
@@ -308,6 +459,23 @@ export default function Reports() {
                 <td>{shipment.declaredValue}</td>
               </tr>
             ))}
+
+            {report?.shipments?.length > 0 && (
+              <tr
+                style={{
+                  background: "var(--clay-surface-soft)",
+                  fontWeight: 600,
+                }}
+              >
+                <td colSpan="4">Totals</td>
+
+                <td>{report.summary.totalShipments} shipments</td>
+
+                <td>{report.summary.totalWeight} kg</td>
+
+                <td>{report.summary.totalValue} LYD</td>
+              </tr>
+            )}
 
             {report?.shipments?.length === 0 && (
               <tr>

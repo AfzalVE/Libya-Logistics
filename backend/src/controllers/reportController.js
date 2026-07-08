@@ -116,13 +116,21 @@ export async function downloadPdfReport(req, res) {
 
     doc.pipe(res);
 
-    doc.fontSize(20);
-    doc.text("Shipment Report");
+    doc.fontSize(22);
+    doc.text("Libya Logistics");
+
+    doc.moveDown();
+
+    doc.fontSize(16);
+    doc.text("Shipment Operations Report");
 
     doc.moveDown();
 
     doc.fontSize(10);
+
     doc.text(`Generated: ${new Date().toLocaleString()}`);
+
+    doc.text(`Total Shipments: ${shipments.length}`);
 
     doc.moveDown();
 
@@ -219,6 +227,17 @@ export async function downloadExcelReport(req, res) {
         header: "Value",
         key: "value",
         width: 15,
+      },
+    ];
+
+    sheet.getRow(1).font = {
+      bold: true,
+    };
+
+    sheet.views = [
+      {
+        state: "frozen",
+        ySplit: 1,
       },
     ];
 
