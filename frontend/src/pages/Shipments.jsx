@@ -5,6 +5,7 @@ import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 import useAuthStore from "../store/useAuthStore";
 
+
 export default function Shipments() {
   const [shipments, setShipments] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
@@ -12,6 +13,22 @@ export default function Shipments() {
   const [showModal, setShowModal] = useState(false);
   const { user } = useAuthStore();
 
+
+  const downloadInvoice = async (id) => {
+    try {
+      const response = await api.get(`/shipments/${id}/invoice`, {
+        responseType: "blob",
+      });
+
+      const url = URL.createObjectURL(response.data);
+
+      window.open(url, "_blank");
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const isOperator = user?.role?.name === "Warehouse Operator";
   const isManager = user?.role?.name === "Warehouse Manager";
   const userWarehouseId = user?.warehouse?._id;
@@ -112,7 +129,7 @@ export default function Shipments() {
       console.error("Error getting/creating customer:", err);
       throw new Error(
         "Failed to register customer: " +
-          (err.response?.data?.message || err.message),
+        (err.response?.data?.message || err.message),
       );
     }
   };
@@ -195,7 +212,7 @@ export default function Shipments() {
     } catch (err) {
       alert(
         "Failed to update status: " +
-          (err.response?.data?.message || err.message),
+        (err.response?.data?.message || err.message),
       );
     }
   };
@@ -246,7 +263,7 @@ export default function Shipments() {
                 Shipments Directory
               </h2>
             </div>
-            
+
             <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "8px", maxWidth: "360px", width: "100%" }}>
               <input
                 type="text"
@@ -301,12 +318,12 @@ export default function Shipments() {
                             borderBottom: "1.5px solid transparent",
                           }}
                           onMouseEnter={(e) =>
-                            (e.currentTarget.style.borderBottomColor =
-                              "var(--clay-ink)")
+                          (e.currentTarget.style.borderBottomColor =
+                            "var(--clay-ink)")
                           }
                           onMouseLeave={(e) =>
-                            (e.currentTarget.style.borderBottomColor =
-                              "transparent")
+                          (e.currentTarget.style.borderBottomColor =
+                            "transparent")
                           }
                         >
                           {s.shipmentNumber}
@@ -360,12 +377,7 @@ export default function Shipments() {
 
                             {s.currentStatus === "COMPLETED" && (
                               <button
-                                onClick={() =>
-                                  window.open(
-                                    `${import.meta.env.VITE_API_URL}/shipments/${s._id}/invoice`,
-                                    "_blank",
-                                  )
-                                }
+                                onClick={() => downloadInvoice(s._id)}
                                 className="clay-btn-primary"
                                 style={{
                                   height: "30px",
