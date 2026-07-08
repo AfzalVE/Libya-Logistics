@@ -330,3 +330,90 @@ export default function Settings() {
     </>
   );
 }
+
+function StatCard({ title, value }) {
+  return (
+    <div
+      style={{
+        background: "var(--clay-canvas)",
+        border: "1px solid var(--clay-hairline)",
+        borderRadius: "var(--r-lg)",
+        padding: "20px",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "13px",
+          color: "var(--clay-muted)",
+        }}
+      >
+        {title}
+      </div>
+
+      <div
+        style={{
+          fontSize: "28px",
+          fontWeight: 700,
+          marginTop: "6px",
+        }}
+      >
+        {value}
+      </div>
+    </div>
+  );
+}
+
+function SectionCard({ title, children }) {
+  return (
+    <div
+      style={{
+        background: "var(--clay-canvas)",
+        border: "1px solid var(--clay-hairline)",
+        borderRadius: "var(--r-lg)",
+        padding: "24px",
+      }}
+    >
+      <h3
+        style={{
+          marginTop: 0,
+          marginBottom: "20px",
+        }}
+      >
+        {title}
+      </h3>
+
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          gap: "16px",
+        }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Input({ label, value, onChange, type = "text" }) {
+  return (
+    <div>
+      <label
+        style={{
+          display: "block",
+          marginBottom: "6px",
+          fontSize: "13px",
+        }}
+      >
+        {label}
+      </label>
+
+      <input
+        type={type}
+        value={value}
+        className="clay-input"
+        onChange={(e) => onChange(e.target.value)}
+      />
+    </div>
+  );
+}
