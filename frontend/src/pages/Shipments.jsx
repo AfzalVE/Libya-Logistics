@@ -51,7 +51,7 @@ export default function Shipments() {
       setWarehouses(res.data);
       if (res.data.length > 0) {
         // Select first warehouse that isn't the operator's own
-        const other = res.data.find(w => w._id !== userWarehouseId);
+        const other = res.data.find((w) => w._id !== userWarehouseId);
         setDestWarehouseId(other?._id || res.data[0]._id);
       }
     } catch (err) {
@@ -69,7 +69,7 @@ export default function Shipments() {
     try {
       // Get all customers and see if mobile matches
       const res = await api.get("/customers");
-      const found = res.data.find(c => c.mobile === mobile);
+      const found = res.data.find((c) => c.mobile === mobile);
       if (found) return found._id;
 
       // Create new customer
@@ -77,12 +77,15 @@ export default function Shipments() {
         name,
         mobile,
         address,
-        nationalId
+        nationalId,
       });
       return createRes.data.customer._id;
     } catch (err) {
       console.error("Error getting/creating customer:", err);
-      throw new Error("Failed to register customer: " + (err.response?.data?.message || err.message));
+      throw new Error(
+        "Failed to register customer: " +
+          (err.response?.data?.message || err.message),
+      );
     }
   };
 
@@ -92,15 +95,27 @@ export default function Shipments() {
     setSubmitting(true);
 
     if (!userWarehouseId) {
-      setError("Your account is not assigned to a warehouse. You cannot book shipments.");
+      setError(
+        "Your account is not assigned to a warehouse. You cannot book shipments.",
+      );
       setSubmitting(false);
       return;
     }
 
     try {
       // Ensure customers are registered
-      const senderId = await getOrCreateCustomer(senderName, senderMobile, senderAddress, senderNationalId);
-      const receiverId = await getOrCreateCustomer(receiverName, receiverMobile, receiverAddress, receiverNationalId);
+      const senderId = await getOrCreateCustomer(
+        senderName,
+        senderMobile,
+        senderAddress,
+        senderNationalId,
+      );
+      const receiverId = await getOrCreateCustomer(
+        receiverName,
+        receiverMobile,
+        receiverAddress,
+        receiverNationalId,
+      );
 
       // Book shipment
       const payload = {
@@ -112,7 +127,7 @@ export default function Shipments() {
         packageCount,
         weight,
         declaredValue,
-        bookedBy: user._id
+        bookedBy: user._id,
       };
 
       const res = await api.post("/shipments", payload);
@@ -146,11 +161,14 @@ export default function Shipments() {
         status: "STORED",
         warehouse: userWarehouseId,
         remarks: "Stored in origin warehouse",
-        updatedBy: user._id
+        updatedBy: user._id,
       });
       fetchShipments();
     } catch (err) {
-      alert("Failed to update status: " + (err.response?.data?.message || err.message));
+      alert(
+        "Failed to update status: " +
+          (err.response?.data?.message || err.message),
+      );
     }
   };
 
@@ -164,16 +182,24 @@ export default function Shipments() {
       />
 
       {loading ? (
-        <div style={{ padding: "40px", textAlign: "center", color: "var(--clay-muted)" }}>
+        <div
+          style={{
+            padding: "40px",
+            textAlign: "center",
+            color: "var(--clay-muted)",
+          }}
+        >
           Loading shipments...
         </div>
       ) : (
-        <div style={{
-          background: "var(--clay-canvas)",
-          borderRadius: "var(--r-lg)",
-          border: "1.5px solid var(--clay-hairline)",
-          overflow: "hidden",
-        }}>
+        <div
+          style={{
+            background: "var(--clay-canvas)",
+            borderRadius: "var(--r-lg)",
+            border: "1.5px solid var(--clay-hairline)",
+            overflow: "hidden",
+          }}
+        >
           <table className="clay-table">
             <thead>
               <tr>
@@ -189,8 +215,9 @@ export default function Shipments() {
             </thead>
             <tbody>
               {shipments.map((s) => {
-                const canStore = isOperator && 
-                  s.currentStatus === "BOOKED" && 
+                const canStore =
+                  isOperator &&
+                  s.currentStatus === "BOOKED" &&
                   s.originWarehouse?._id === userWarehouseId;
 
                 return (
@@ -206,8 +233,14 @@ export default function Shipments() {
                           fontSize: "13px",
                           borderBottom: "1.5px solid transparent",
                         }}
-                        onMouseEnter={e => e.currentTarget.style.borderBottomColor = "var(--clay-ink)"}
-                        onMouseLeave={e => e.currentTarget.style.borderBottomColor = "transparent"}
+                        onMouseEnter={(e) =>
+                          (e.currentTarget.style.borderBottomColor =
+                            "var(--clay-ink)")
+                        }
+                        onMouseLeave={(e) =>
+                          (e.currentTarget.style.borderBottomColor =
+                            "transparent")
+                        }
                       >
                         {s.shipmentNumber}
                       </Link>
@@ -225,21 +258,59 @@ export default function Shipments() {
                         <button
                           onClick={() => handleQuickStore(s._id)}
                           className="clay-btn-primary"
-                          style={{ height: "30px", fontSize: "11px", padding: "0 12px", borderRadius: "8px" }}
+                          style={{
+                            height: "30px",
+                            fontSize: "11px",
+                            padding: "0 12px",
+                            borderRadius: "8px",
+                          }}
                         >
                           Store in Wh
                         </button>
                       ) : (
-                        <Link
-                          to={`/shipments/${s._id}`}
-                          className="clay-btn-secondary"
+                        <div
                           style={{
-                            height: "30px", fontSize: "11px", padding: "0 12px", borderRadius: "8px",
-                            display: "inline-flex", alignItems: "center", textDecoration: "none"
+                            display: "flex",
+                            gap: "8px",
+                            flexWrap: "wrap",
                           }}
                         >
-                          Manage Flow
-                        </Link>
+                          <Link
+                            to={`/shipments/${s._id}`}
+                            className="clay-btn-secondary"
+                            style={{
+                              height: "30px",
+                              fontSize: "11px",
+                              padding: "0 12px",
+                              borderRadius: "8px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              textDecoration: "none",
+                            }}
+                          >
+                            Manage Flow
+                          </Link>
+
+                          {s.currentStatus === "COMPLETED" && (
+                            <button
+                              onClick={() =>
+                                window.open(
+                                  `${import.meta.env.VITE_API_URL}/shipments/${s._id}/invoice`,
+                                  "_blank",
+                                )
+                              }
+                              className="clay-btn-primary"
+                              style={{
+                                height: "30px",
+                                fontSize: "11px",
+                                padding: "0 12px",
+                                borderRadius: "8px",
+                              }}
+                            >
+                              Invoice
+                            </button>
+                          )}
+                        </div>
                       )}
                     </td>
                   </tr>
@@ -252,37 +323,88 @@ export default function Shipments() {
 
       {/* Book Shipment Modal */}
       {showModal && (
-        <div style={{
-          position: "fixed", top: 0, left: 0, width: "100%", height: "100%",
-          backgroundColor: "rgba(10, 10, 10, 0.4)", display: "flex",
-          alignItems: "center", justifyContent: "center", zIndex: 1000
-        }}>
-          <div style={{
-            background: "var(--clay-canvas)", padding: "32px", borderRadius: "var(--r-xl)",
-            width: "100%", maxWidth: "780px", border: "1.5px solid var(--clay-hairline)",
-            maxHeight: "90vh", overflowY: "auto"
-          }}>
-            <h3 style={{ fontSize: "24px", fontWeight: 600, letterSpacing: "-0.5px", margin: "0 0 4px 0" }}>
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(10, 10, 10, 0.4)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              background: "var(--clay-canvas)",
+              padding: "32px",
+              borderRadius: "var(--r-xl)",
+              width: "100%",
+              maxWidth: "780px",
+              border: "1.5px solid var(--clay-hairline)",
+              maxHeight: "90vh",
+              overflowY: "auto",
+            }}
+          >
+            <h3
+              style={{
+                fontSize: "24px",
+                fontWeight: 600,
+                letterSpacing: "-0.5px",
+                margin: "0 0 4px 0",
+              }}
+            >
               Book New Shipment
             </h3>
-            <p style={{ fontSize: "14px", color: "var(--clay-muted)", margin: "0 0 20px 0" }}>
-              Origin locked to: <strong style={{ color: "var(--clay-ink)" }}>{user?.warehouse?.name}</strong>
+            <p
+              style={{
+                fontSize: "14px",
+                color: "var(--clay-muted)",
+                margin: "0 0 20px 0",
+              }}
+            >
+              Origin locked to:{" "}
+              <strong style={{ color: "var(--clay-ink)" }}>
+                {user?.warehouse?.name}
+              </strong>
             </p>
 
             {error && (
-              <div style={{
-                background: "rgba(239, 68, 68, 0.08)", border: "1.5px solid var(--clay-error)",
-                color: "var(--clay-error)", borderRadius: "var(--r-md)", padding: "10px 14px",
-                marginBottom: "16px", fontSize: "13px", fontWeight: 500
-              }}>
+              <div
+                style={{
+                  background: "rgba(239, 68, 68, 0.08)",
+                  border: "1.5px solid var(--clay-error)",
+                  color: "var(--clay-error)",
+                  borderRadius: "var(--r-md)",
+                  padding: "10px 14px",
+                  marginBottom: "16px",
+                  fontSize: "13px",
+                  fontWeight: 500,
+                }}
+              >
                 {error}
               </div>
             )}
 
-            <form onSubmit={handleBookShipment} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+            <form
+              onSubmit={handleBookShipment}
+              style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+            >
               {/* Destination */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                <label style={{ fontSize: "11px", fontWeight: 600, color: "var(--clay-muted)", textTransform: "uppercase" }}>
+              <div
+                style={{ display: "flex", flexDirection: "column", gap: "4px" }}
+              >
+                <label
+                  style={{
+                    fontSize: "11px",
+                    fontWeight: 600,
+                    color: "var(--clay-muted)",
+                    textTransform: "uppercase",
+                  }}
+                >
                   Destination Warehouse
                 </label>
                 <select
@@ -291,71 +413,296 @@ export default function Shipments() {
                   className="clay-select"
                   style={{ width: "100%" }}
                 >
-                  {warehouses.filter(w => w._id !== userWarehouseId).map(w => (
-                    <option key={w._id} value={w._id}>{w.name} ({w.city})</option>
-                  ))}
+                  {warehouses
+                    .filter((w) => w._id !== userWarehouseId)
+                    .map((w) => (
+                      <option key={w._id} value={w._id}>
+                        {w.name} ({w.city})
+                      </option>
+                    ))}
                 </select>
               </div>
 
               {/* Sender & Receiver Forms side-by-side */}
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "20px",
+                }}
+              >
                 {/* Sender Column */}
-                <div style={{
-                  background: "var(--clay-surface-soft)", padding: "16px",
-                  borderRadius: "var(--r-lg)", border: "1px solid var(--clay-hairline)"
-                }}>
-                  <h4 style={{ fontSize: "14px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 12px 0", borderBottom: "1.5px solid var(--clay-hairline)", paddingBottom: "6px" }}>
+                <div
+                  style={{
+                    background: "var(--clay-surface-soft)",
+                    padding: "16px",
+                    borderRadius: "var(--r-lg)",
+                    border: "1px solid var(--clay-hairline)",
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "var(--clay-ink)",
+                      margin: "0 0 12px 0",
+                      borderBottom: "1.5px solid var(--clay-hairline)",
+                      paddingBottom: "6px",
+                    }}
+                  >
                     Sender Details
                   </h4>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <input type="text" placeholder="Name" required value={senderName} onChange={e => setSenderName(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
-                    <input type="text" placeholder="Mobile" required value={senderMobile} onChange={e => setSenderMobile(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
-                    <input type="text" placeholder="National ID" required value={senderNationalId} onChange={e => setSenderNationalId(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
-                    <input type="text" placeholder="Address" required value={senderAddress} onChange={e => setSenderAddress(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      required
+                      value={senderName}
+                      onChange={(e) => setSenderName(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Mobile"
+                      required
+                      value={senderMobile}
+                      onChange={(e) => setSenderMobile(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="National ID"
+                      required
+                      value={senderNationalId}
+                      onChange={(e) => setSenderNationalId(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Address"
+                      required
+                      value={senderAddress}
+                      onChange={(e) => setSenderAddress(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
                   </div>
                 </div>
 
                 {/* Receiver Column */}
-                <div style={{
-                  background: "var(--clay-surface-soft)", padding: "16px",
-                  borderRadius: "var(--r-lg)", border: "1px solid var(--clay-hairline)"
-                }}>
-                  <h4 style={{ fontSize: "14px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 12px 0", borderBottom: "1.5px solid var(--clay-hairline)", paddingBottom: "6px" }}>
+                <div
+                  style={{
+                    background: "var(--clay-surface-soft)",
+                    padding: "16px",
+                    borderRadius: "var(--r-lg)",
+                    border: "1px solid var(--clay-hairline)",
+                  }}
+                >
+                  <h4
+                    style={{
+                      fontSize: "14px",
+                      fontWeight: 600,
+                      color: "var(--clay-ink)",
+                      margin: "0 0 12px 0",
+                      borderBottom: "1.5px solid var(--clay-hairline)",
+                      paddingBottom: "6px",
+                    }}
+                  >
                     Receiver Details
                   </h4>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <input type="text" placeholder="Name" required value={receiverName} onChange={e => setReceiverName(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
-                    <input type="text" placeholder="Mobile" required value={receiverMobile} onChange={e => setReceiverMobile(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
-                    <input type="text" placeholder="National ID" required value={receiverNationalId} onChange={e => setReceiverNationalId(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
-                    <input type="text" placeholder="Address" required value={receiverAddress} onChange={e => setReceiverAddress(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "10px",
+                    }}
+                  >
+                    <input
+                      type="text"
+                      placeholder="Name"
+                      required
+                      value={receiverName}
+                      onChange={(e) => setReceiverName(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Mobile"
+                      required
+                      value={receiverMobile}
+                      onChange={(e) => setReceiverMobile(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="National ID"
+                      required
+                      value={receiverNationalId}
+                      onChange={(e) => setReceiverNationalId(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
+                    <input
+                      type="text"
+                      placeholder="Address"
+                      required
+                      value={receiverAddress}
+                      onChange={(e) => setReceiverAddress(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
                   </div>
                 </div>
               </div>
 
               {/* Package Details */}
-              <div style={{
-                background: "var(--clay-surface-soft)", padding: "16px",
-                borderRadius: "var(--r-lg)", border: "1px solid var(--clay-hairline)"
-              }}>
-                <h4 style={{ fontSize: "14px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 12px 0", borderBottom: "1.5px solid var(--clay-hairline)", paddingBottom: "6px" }}>
+              <div
+                style={{
+                  background: "var(--clay-surface-soft)",
+                  padding: "16px",
+                  borderRadius: "var(--r-lg)",
+                  border: "1px solid var(--clay-hairline)",
+                }}
+              >
+                <h4
+                  style={{
+                    fontSize: "14px",
+                    fontWeight: 600,
+                    color: "var(--clay-ink)",
+                    margin: "0 0 12px 0",
+                    borderBottom: "1.5px solid var(--clay-hairline)",
+                    paddingBottom: "6px",
+                  }}
+                >
                   Goods & Package Details
                 </h4>
-                <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: "10px", alignItems: "flex-end" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "10px", fontWeight: 600, color: "var(--clay-muted)", textTransform: "uppercase" }}>Description</label>
-                    <input type="text" placeholder="e.g. Electronics, Clothes" required value={goodsDescription} onChange={e => setGoodsDescription(e.target.value)} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "2fr 1fr 1fr 1fr",
+                    gap: "10px",
+                    alignItems: "flex-end",
+                  }}
+                >
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "var(--clay-muted)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Description
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Electronics, Clothes"
+                      required
+                      value={goodsDescription}
+                      onChange={(e) => setGoodsDescription(e.target.value)}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "10px", fontWeight: 600, color: "var(--clay-muted)", textTransform: "uppercase" }}>Pkgs</label>
-                    <input type="number" min={1} required value={packageCount} onChange={e => setPackageCount(Number(e.target.value))} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "var(--clay-muted)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Pkgs
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={packageCount}
+                      onChange={(e) => setPackageCount(Number(e.target.value))}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "10px", fontWeight: 600, color: "var(--clay-muted)", textTransform: "uppercase" }}>Weight (kg)</label>
-                    <input type="number" min={0.1} step={0.1} required value={weight} onChange={e => setWeight(Number(e.target.value))} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "var(--clay-muted)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Weight (kg)
+                    </label>
+                    <input
+                      type="number"
+                      min={0.1}
+                      step={0.1}
+                      required
+                      value={weight}
+                      onChange={(e) => setWeight(Number(e.target.value))}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "10px", fontWeight: 600, color: "var(--clay-muted)", textTransform: "uppercase" }}>Value (LYD)</label>
-                    <input type="number" min={0} required value={declaredValue} onChange={e => setDeclaredValue(Number(e.target.value))} className="clay-input" style={{ height: "38px", fontSize: "14px" }} />
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: "4px",
+                    }}
+                  >
+                    <label
+                      style={{
+                        fontSize: "10px",
+                        fontWeight: 600,
+                        color: "var(--clay-muted)",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Value (LYD)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      required
+                      value={declaredValue}
+                      onChange={(e) => setDeclaredValue(Number(e.target.value))}
+                      className="clay-input"
+                      style={{ height: "38px", fontSize: "14px" }}
+                    />
                   </div>
                 </div>
               </div>
