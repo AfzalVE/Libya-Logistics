@@ -10,6 +10,7 @@ import warehouseRoutes from "./routes/warehouseRoutes.js";
 import shipmentRoutes from "./routes/shipmentRoutes.js";
 import customerRoutes from "./routes/customerRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
+import settingRoutes from "./routes/settingRoutes.js";
 
 dotenv.config();
 
@@ -30,6 +31,7 @@ app.use("/api/warehouses", warehouseRoutes);
 app.use("/api/shipments", shipmentRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/reports", reportRoutes);
+app.use("/api/settings", settingRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

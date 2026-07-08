@@ -10,9 +10,16 @@ import {
   deleteUser,
 } from "../controllers/userController.js";
 
+import { protect, authorize } from "../middleware/auth.js";
+
 const router = express.Router();
 
 router.post("/login", loginUser);
+
+// All other user management routes require Super Admin auth
+router.use(protect);
+router.use(authorize("Super Admin"));
+
 router.post("/", createUser);
 router.get("/", getUsers);
 router.get("/roles", getRoles);

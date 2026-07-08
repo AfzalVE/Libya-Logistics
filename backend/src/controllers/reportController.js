@@ -1,20 +1,48 @@
+import mongoose from "mongoose";
 import Shipment from "../models/Shipment.js";
+import Customer from "../models/Customer.js";
 import PDFDocument from "pdfkit";
 import ExcelJS from "exceljs";
 
 export async function getReportData(req, res) {
   try {
-    const { from, to, warehouse, status } = req.query;
+    const {
+      from,
+      to,
+      warehouse,
+      status,
+      search,
+      page = 1,
+      limit = 20,
+    } = req.query;
 
-    const filter = {};
+    // 1. Role-based Warehouse Access Filter
+    let warehouseAccessFilter = {};
+    if (req.user.role.name !== "Super Admin") {
+      const userWarehouseId = req.user.warehouse?._id || req.user.warehouse;
+      if (!userWarehouseId) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied. No warehouse assigned to this staff user.",
+        });
+      }
+      warehouseAccessFilter = {
+        $or: [
+          { originWarehouse: userWarehouseId },
+          { destinationWarehouse: userWarehouseId },
+          { currentWarehouse: userWarehouseId },
+        ],
+      };
+    }
 
+    const filter = { ...warehouseAccessFilter };
+
+    // Date Filter
     if (from || to) {
       filter.bookingDate = {};
-
       if (from) {
         filter.bookingDate.$gte = new Date(from);
       }
-
       if (to) {
         const endDate = new Date(to);
         endDate.setHours(23, 59, 59, 999);
@@ -22,59 +50,184 @@ export async function getReportData(req, res) {
       }
     }
 
-    if (warehouse) {
-      filter.originWarehouse = warehouse;
-    }
-
     if (status) {
       filter.currentStatus = status;
     }
 
-    const shipments = await Shipment.find(filter)
-      .populate("originWarehouse", "name city")
-      .populate("destinationWarehouse", "name city")
-      .populate("senderCustomer", "name mobile")
-      .populate("receiverCustomer", "name mobile")
-      .sort({ bookingDate: -1 });
+    if (warehouse) {
+      if (req.user.role.name === "Super Admin") {
+        filter.$and = filter.$and || [];
+        filter.$and.push({
+          $or: [
+            { originWarehouse: warehouse },
+            { destinationWarehouse: warehouse },
+            { currentWarehouse: warehouse },
+          ]
+        });
+      }
+    }
 
-    const summary = {
-      totalShipments: shipments.length,
+    // Global Search
+    if (search) {
+      const matchingCustomers = await Customer.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { mobile: { $regex: search, $options: "i" } },
+        ]
+      }).select("_id").lean();
 
-      totalWeight: shipments.reduce((sum, item) => sum + (item.weight || 0), 0),
+      const customerIds = matchingCustomers.map(c => c._id);
 
-      totalValue: shipments.reduce(
-        (sum, item) => sum + (item.declaredValue || 0),
-        0,
-      ),
+      const searchOr = [
+        { shipmentNumber: { $regex: search, $options: "i" } },
+        { barcode: { $regex: search, $options: "i" } },
+        { qrCode: { $regex: search, $options: "i" } },
+        { goodsDescription: { $regex: search, $options: "i" } },
+      ];
 
-      completed: shipments.filter((s) => s.currentStatus === "COMPLETED")
-        .length,
+      if (customerIds.length > 0) {
+        searchOr.push({ senderCustomer: { $in: customerIds } });
+        searchOr.push({ receiverCustomer: { $in: customerIds } });
+      }
 
-      inTransit: shipments.filter((s) => s.currentStatus === "IN_TRANSIT")
-        .length,
+      if (filter.$and) {
+        filter.$and.push({ $or: searchOr });
+      } else {
+        filter.$and = [{ $or: searchOr }];
+      }
+    }
 
-      cancelled: shipments.filter((s) => s.currentStatus === "CANCELLED")
-        .length,
+    const pageNumber = Math.max(parseInt(page, 10), 1);
+    const pageSize = Math.min(Math.max(parseInt(limit, 10), 1), 100);
+    const skip = (pageNumber - 1) * pageSize;
+
+    // Run Aggregation for Stats (Avoid reduce)
+    const [statsResult, shipments, totalRecords] = await Promise.all([
+      Shipment.aggregate([
+        { $match: filter },
+        {
+          $facet: {
+            summary: [
+              {
+                $group: {
+                  _id: null,
+                  totalShipments: { $sum: 1 },
+                  totalWeight: { $sum: { $ifNull: ["$weight", 0] } },
+                  totalValue: { $sum: { $ifNull: ["$declaredValue", 0] } }
+                }
+              }
+            ],
+            statusCounts: [
+              {
+                $group: {
+                  _id: "$currentStatus",
+                  count: { $sum: 1 }
+                }
+              }
+            ],
+            warehouseStats: [
+              {
+                $lookup: {
+                  from: "warehouses",
+                  localField: "currentWarehouse",
+                  foreignField: "_id",
+                  as: "warehouseInfo"
+                }
+              },
+              {
+                $unwind: {
+                  path: "$warehouseInfo",
+                  preserveNullAndEmptyArrays: true
+                }
+              },
+              {
+                $group: {
+                  _id: {
+                    id: "$currentWarehouse",
+                    name: { $ifNull: ["$warehouseInfo.name", "In Transit"] }
+                  },
+                  count: { $sum: 1 },
+                  totalWeight: { $sum: { $ifNull: ["$weight", 0] } },
+                  totalValue: { $sum: { $ifNull: ["$declaredValue", 0] } }
+                }
+              }
+            ]
+          }
+        }
+      ]),
+
+      Shipment.find(filter)
+        .populate("originWarehouse", "name city")
+        .populate("destinationWarehouse", "name city")
+        .populate("senderCustomer", "name mobile")
+        .populate("receiverCustomer", "name mobile")
+        .sort({ bookingDate: -1 })
+        .skip(skip)
+        .limit(pageSize)
+        .lean(),
+
+      Shipment.countDocuments(filter),
+    ]);
+
+    const facetData = statsResult[0] || {};
+    const summary = facetData.summary?.[0] || {
+      totalShipments: 0,
+      totalWeight: 0,
+      totalValue: 0
     };
 
-    res.json({
+    return res.status(200).json({
       success: true,
-      summary,
+      summary: {
+        totalShipments: summary.totalShipments,
+        totalWeight: summary.totalWeight,
+        totalValue: summary.totalValue,
+        statusCounts: facetData.statusCounts || [],
+        warehouseStats: facetData.warehouseStats || [],
+      },
       shipments,
+      pagination: {
+        page: pageNumber,
+        limit: pageSize,
+        totalRecords,
+        totalPages: Math.ceil(totalRecords / pageSize),
+      },
     });
   } catch (error) {
-    res.status(500).json({
+    console.error("Report Error:", error);
+
+    return res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to generate report.",
+      error: error.message,
     });
   }
 }
 
 export async function downloadPdfReport(req, res) {
   try {
-    const { from, to, warehouse, status } = req.query;
+    const { from, to, warehouse, status, search } = req.query;
 
-    const filter = {};
+    // 1. Role-based Warehouse Access Filter
+    let warehouseAccessFilter = {};
+    if (req.user.role.name !== "Super Admin") {
+      const userWarehouseId = req.user.warehouse?._id || req.user.warehouse;
+      if (!userWarehouseId) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied. No warehouse assigned to this staff user.",
+        });
+      }
+      warehouseAccessFilter = {
+        $or: [
+          { originWarehouse: userWarehouseId },
+          { destinationWarehouse: userWarehouseId },
+          { currentWarehouse: userWarehouseId },
+        ],
+      };
+    }
+
+    const filter = { ...warehouseAccessFilter };
 
     if (from || to) {
       filter.bookingDate = {};
@@ -90,12 +243,51 @@ export async function downloadPdfReport(req, res) {
       }
     }
 
-    if (warehouse) {
-      filter.originWarehouse = warehouse;
-    }
-
     if (status) {
       filter.currentStatus = status;
+    }
+
+    if (warehouse) {
+      if (req.user.role.name === "Super Admin") {
+        filter.$and = filter.$and || [];
+        filter.$and.push({
+          $or: [
+            { originWarehouse: warehouse },
+            { destinationWarehouse: warehouse },
+            { currentWarehouse: warehouse },
+          ]
+        });
+      }
+    }
+
+    // Global Search
+    if (search) {
+      const matchingCustomers = await Customer.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { mobile: { $regex: search, $options: "i" } },
+        ]
+      }).select("_id").lean();
+
+      const customerIds = matchingCustomers.map(c => c._id);
+
+      const searchOr = [
+        { shipmentNumber: { $regex: search, $options: "i" } },
+        { barcode: { $regex: search, $options: "i" } },
+        { qrCode: { $regex: search, $options: "i" } },
+        { goodsDescription: { $regex: search, $options: "i" } },
+      ];
+
+      if (customerIds.length > 0) {
+        searchOr.push({ senderCustomer: { $in: customerIds } });
+        searchOr.push({ receiverCustomer: { $in: customerIds } });
+      }
+
+      if (filter.$and) {
+        filter.$and.push({ $or: searchOr });
+      } else {
+        filter.$and = [{ $or: searchOr }];
+      }
     }
 
     const shipments = await Shipment.find(filter)
@@ -145,6 +337,8 @@ export async function downloadPdfReport(req, res) {
 
       doc.text(`Destination: ${shipment.destinationWarehouse?.name}`);
 
+      doc.text(`Product Description: ${shipment.goodsDescription}`);
+
       doc.text(`Weight: ${shipment.weight} kg`);
 
       doc.text(`Value: ${shipment.declaredValue} LYD`);
@@ -163,9 +357,28 @@ export async function downloadPdfReport(req, res) {
 
 export async function downloadExcelReport(req, res) {
   try {
-    const { from, to, warehouse, status } = req.query;
+    const { from, to, warehouse, status, search } = req.query;
 
-    const filter = {};
+    // 1. Role-based Warehouse Access Filter
+    let warehouseAccessFilter = {};
+    if (req.user.role.name !== "Super Admin") {
+      const userWarehouseId = req.user.warehouse?._id || req.user.warehouse;
+      if (!userWarehouseId) {
+        return res.status(403).json({
+          success: false,
+          message: "Access denied. No warehouse assigned to this staff user.",
+        });
+      }
+      warehouseAccessFilter = {
+        $or: [
+          { originWarehouse: userWarehouseId },
+          { destinationWarehouse: userWarehouseId },
+          { currentWarehouse: userWarehouseId },
+        ],
+      };
+    }
+
+    const filter = { ...warehouseAccessFilter };
 
     if (from || to) {
       filter.bookingDate = {};
@@ -181,12 +394,51 @@ export async function downloadExcelReport(req, res) {
       }
     }
 
-    if (warehouse) {
-      filter.originWarehouse = warehouse;
-    }
-
     if (status) {
       filter.currentStatus = status;
+    }
+
+    if (warehouse) {
+      if (req.user.role.name === "Super Admin") {
+        filter.$and = filter.$and || [];
+        filter.$and.push({
+          $or: [
+            { originWarehouse: warehouse },
+            { destinationWarehouse: warehouse },
+            { currentWarehouse: warehouse },
+          ]
+        });
+      }
+    }
+
+    // Global Search
+    if (search) {
+      const matchingCustomers = await Customer.find({
+        $or: [
+          { name: { $regex: search, $options: "i" } },
+          { mobile: { $regex: search, $options: "i" } },
+        ]
+      }).select("_id").lean();
+
+      const customerIds = matchingCustomers.map(c => c._id);
+
+      const searchOr = [
+        { shipmentNumber: { $regex: search, $options: "i" } },
+        { barcode: { $regex: search, $options: "i" } },
+        { qrCode: { $regex: search, $options: "i" } },
+        { goodsDescription: { $regex: search, $options: "i" } },
+      ];
+
+      if (customerIds.length > 0) {
+        searchOr.push({ senderCustomer: { $in: customerIds } });
+        searchOr.push({ receiverCustomer: { $in: customerIds } });
+      }
+
+      if (filter.$and) {
+        filter.$and.push({ $or: searchOr });
+      } else {
+        filter.$and = [{ $or: searchOr }];
+      }
     }
 
     const shipments = await Shipment.find(filter)
@@ -216,6 +468,11 @@ export async function downloadExcelReport(req, res) {
       {
         header: "Destination",
         key: "destination",
+        width: 25,
+      },
+      {
+        header: "Product Description",
+        key: "goodsDescription",
         width: 25,
       },
       {
@@ -250,6 +507,8 @@ export async function downloadExcelReport(req, res) {
         origin: shipment.originWarehouse?.name,
 
         destination: shipment.destinationWarehouse?.name,
+
+        goodsDescription: shipment.goodsDescription,
 
         weight: shipment.weight,
 

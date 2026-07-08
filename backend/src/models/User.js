@@ -32,7 +32,7 @@ const userSchema =
         type: String,
         enum: [
           "ACTIVE",
-          "SUSPENDED",
+          "INACTIVE",
           "LOCKED"
         ],
         default: "ACTIVE"

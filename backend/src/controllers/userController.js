@@ -114,7 +114,7 @@ export async function updateUser(req, res) {
   try {
     const { id } = req.params;
 
-    const { name, email, phone, warehouse } = req.body;
+    const { name, email, phone, warehouse, role } = req.body;
 
     const existingUser = await User.findById(id);
 
@@ -141,6 +141,9 @@ export async function updateUser(req, res) {
     existingUser.email = email;
     existingUser.phone = phone;
     existingUser.warehouse = warehouse || undefined;
+    if (role) {
+      existingUser.role = role;
+    }
 
     await existingUser.save();
 
@@ -164,7 +167,7 @@ export async function updateUser(req, res) {
 export async function toggleUserStatus(req, res) {
   try {
     const { id } = req.params;
-
+    //console.log(id)
     const user = await User.findById(id).populate("role");
 
     if (!user) {
@@ -180,9 +183,7 @@ export async function toggleUserStatus(req, res) {
         message: "Super Admin cannot be suspended",
       });
     }
-
-    user.status = user.status === "ACTIVE" ? "DEACTIVATED" : "ACTIVE";
-
+    user.status = user.status === "ACTIVE" ? "INACTIVE" : "ACTIVE";
     await user.save();
 
     res.json({

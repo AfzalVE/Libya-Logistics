@@ -1,12 +1,21 @@
 import Shipment from "../models/Shipment.js";
 
 export async function generateShipmentNumber() {
-  const count = await Shipment.countDocuments();
+  const latestShipment = await Shipment.findOne()
+    .sort({ shipmentNumber: -1 })
+    .select("shipmentNumber")
+    .lean();
 
-  const next = String(count + 1).padStart(
-    6,
-    "0"
-  );
+  let nextSequence = 1;
 
-  return `LY-${new Date().getFullYear()}-${next}`;
+  if (latestShipment?.shipmentNumber) {
+    const lastSequence = parseInt(
+      latestShipment.shipmentNumber.split("-")[2],
+      10
+    );
+
+    nextSequence = lastSequence + 1;
+  }
+
+  return `LY-${new Date().getFullYear()}-${String(nextSequence).padStart(6, "0")}`;
 }
