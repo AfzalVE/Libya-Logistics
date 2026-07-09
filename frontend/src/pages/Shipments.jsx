@@ -5,7 +5,6 @@ import PageHeader from "../components/PageHeader";
 import StatusBadge from "../components/StatusBadge";
 import useAuthStore from "../store/useAuthStore";
 
-
 const DOT_COLORS = {
   BOOKED: "var(--clay-lavender)",
   STORED: "var(--clay-mint)",
@@ -23,7 +22,6 @@ export default function Shipments() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const { user } = useAuthStore();
-
 
   const downloadInvoice = async (id) => {
     try {
@@ -73,7 +71,9 @@ export default function Shipments() {
   const fetchShipments = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/shipments?page=${currentPage}&limit=10&search=${searchQuery}&status=${statusFilter}`);
+      const res = await api.get(
+        `/shipments?page=${currentPage}&limit=10&search=${searchQuery}&status=${statusFilter}`,
+      );
       if (res.data && res.data.data) {
         setShipments(res.data.data);
         setTotalPages(res.data.pagination.totalPages);
@@ -143,7 +143,7 @@ export default function Shipments() {
       console.error("Error getting/creating customer:", err);
       throw new Error(
         "Failed to register customer: " +
-        (err.response?.data?.message || err.message),
+          (err.response?.data?.message || err.message),
       );
     }
   };
@@ -226,7 +226,7 @@ export default function Shipments() {
     } catch (err) {
       alert(
         "Failed to update status: " +
-        (err.response?.data?.message || err.message),
+          (err.response?.data?.message || err.message),
       );
     }
   };
@@ -259,26 +259,54 @@ export default function Shipments() {
             overflow: "hidden",
           }}
         >
-          <div style={{
-            padding: "16px 20px",
-            borderBottom: "1.5px solid var(--clay-hairline)",
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: "12px",
-          }}>
+          <div
+            style={{
+              padding: "16px 20px",
+              borderBottom: "1.5px solid var(--clay-hairline)",
+              display: "flex",
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
             <div>
-              <p style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--clay-muted)", margin: "0 0 2px 0" }}>
+              <p
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  color: "var(--clay-muted)",
+                  margin: "0 0 2px 0",
+                }}
+              >
                 Logistics Registry
               </p>
-              <h2 style={{ fontSize: "18px", fontWeight: 600, color: "var(--clay-ink)", margin: 0, letterSpacing: "-0.2px" }}>
+              <h2
+                style={{
+                  fontSize: "18px",
+                  fontWeight: 600,
+                  color: "var(--clay-ink)",
+                  margin: 0,
+                  letterSpacing: "-0.2px",
+                }}
+              >
                 Shipments Directory
               </h2>
             </div>
 
-            <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "8px", maxWidth: "540px", width: "100%", alignItems: "center" }}>
+            <form
+              onSubmit={handleSearchSubmit}
+              style={{
+                display: "flex",
+                gap: "8px",
+                maxWidth: "540px",
+                width: "100%",
+                alignItems: "center",
+              }}
+            >
               <input
                 type="text"
                 placeholder="Search shipments..."
@@ -302,18 +330,31 @@ export default function Shipments() {
                     gap: "8px",
                     fontWeight: 500,
                     borderRadius: "var(--r-md)",
-                    whiteSpace: "nowrap"
+                    whiteSpace: "nowrap",
                   }}
                 >
-                  <span style={{
-                    width: "8px",
-                    height: "8px",
-                    borderRadius: "50%",
-                    backgroundColor: statusFilter ? DOT_COLORS[statusFilter] : "var(--clay-muted-soft)",
-                    display: "inline-block"
-                  }} />
-                  {statusFilter ? statusFilter.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : "All Statuses"}
-                  <span style={{ fontSize: "10px", color: "var(--clay-muted)" }}>▼</span>
+                  <span
+                    style={{
+                      width: "8px",
+                      height: "8px",
+                      borderRadius: "50%",
+                      backgroundColor: statusFilter
+                        ? DOT_COLORS[statusFilter]
+                        : "var(--clay-muted-soft)",
+                      display: "inline-block",
+                    }}
+                  />
+                  {statusFilter
+                    ? statusFilter
+                        .replace(/_/g, " ")
+                        .toLowerCase()
+                        .replace(/\b\w/g, (c) => c.toUpperCase())
+                    : "All"}
+                  <span
+                    style={{ fontSize: "10px", color: "var(--clay-muted)" }}
+                  >
+                    ▼
+                  </span>
                 </button>
 
                 {showStatusDropdown && (
@@ -326,7 +367,7 @@ export default function Shipments() {
                         left: 0,
                         right: 0,
                         bottom: 0,
-                        zIndex: 99
+                        zIndex: 99,
                       }}
                     />
                     <div
@@ -344,16 +385,19 @@ export default function Shipments() {
                         minWidth: "185px",
                         display: "flex",
                         flexDirection: "column",
-                        gap: "2px"
+                        gap: "2px",
                       }}
                     >
                       {[
-                        { value: "", label: "All Statuses" },
+                        { value: "", label: "All" },
                         { value: "BOOKED", label: "Booked" },
                         { value: "STORED", label: "Stored" },
                         { value: "DISPATCHED", label: "Dispatched" },
                         { value: "IN_TRANSIT", label: "In Transit" },
-                        { value: "READY_FOR_PICKUP", label: "Ready for Pickup" },
+                        {
+                          value: "READY_FOR_PICKUP",
+                          label: "Ready for Pickup",
+                        },
                         { value: "COMPLETED", label: "Completed" },
                       ].map((opt) => (
                         <button
@@ -369,7 +413,10 @@ export default function Shipments() {
                             fontSize: "12px",
                             fontWeight: statusFilter === opt.value ? 600 : 500,
                             textAlign: "left",
-                            background: statusFilter === opt.value ? "var(--clay-surface-soft)" : "transparent",
+                            background:
+                              statusFilter === opt.value
+                                ? "var(--clay-surface-soft)"
+                                : "transparent",
                             border: "none",
                             borderRadius: "var(--r-xs)",
                             cursor: "pointer",
@@ -378,11 +425,12 @@ export default function Shipments() {
                             alignItems: "center",
                             gap: "8px",
                             transition: "background 0.1s ease",
-                            width: "100%"
+                            width: "100%",
                           }}
                           onMouseEnter={(e) => {
                             if (statusFilter !== opt.value) {
-                              e.currentTarget.style.background = "var(--clay-surface-soft)";
+                              e.currentTarget.style.background =
+                                "var(--clay-surface-soft)";
                             }
                           }}
                           onMouseLeave={(e) => {
@@ -391,13 +439,17 @@ export default function Shipments() {
                             }
                           }}
                         >
-                          <span style={{
-                            width: "8px",
-                            height: "8px",
-                            borderRadius: "50%",
-                            backgroundColor: opt.value ? DOT_COLORS[opt.value] : "var(--clay-muted-soft)",
-                            display: "inline-block"
-                          }} />
+                          <span
+                            style={{
+                              width: "8px",
+                              height: "8px",
+                              borderRadius: "50%",
+                              backgroundColor: opt.value
+                                ? DOT_COLORS[opt.value]
+                                : "var(--clay-muted-soft)",
+                              display: "inline-block",
+                            }}
+                          />
                           {opt.label}
                         </button>
                       ))}
@@ -405,11 +457,24 @@ export default function Shipments() {
                   </>
                 )}
               </div>
-              <button type="submit" className="clay-btn-primary" style={{ height: "36px", padding: "0 16px", fontSize: "13px" }}>
+              <button
+                type="submit"
+                className="clay-btn-primary"
+                style={{ height: "36px", padding: "0 16px", fontSize: "13px" }}
+              >
                 Search
               </button>
               {(searchQuery || statusFilter) && (
-                <button type="button" onClick={handleClearSearch} className="clay-btn-secondary" style={{ height: "36px", padding: "0 12px", fontSize: "13px" }}>
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="clay-btn-secondary"
+                  style={{
+                    height: "36px",
+                    padding: "0 12px",
+                    fontSize: "13px",
+                  }}
+                >
                   Clear
                 </button>
               )}
@@ -450,12 +515,12 @@ export default function Shipments() {
                             borderBottom: "1.5px solid transparent",
                           }}
                           onMouseEnter={(e) =>
-                          (e.currentTarget.style.borderBottomColor =
-                            "var(--clay-ink)")
+                            (e.currentTarget.style.borderBottomColor =
+                              "var(--clay-ink)")
                           }
                           onMouseLeave={(e) =>
-                          (e.currentTarget.style.borderBottomColor =
-                            "transparent")
+                            (e.currentTarget.style.borderBottomColor =
+                              "transparent")
                           }
                         >
                           {s.shipmentNumber}
@@ -533,30 +598,48 @@ export default function Shipments() {
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div style={{
-              padding: "16px 20px",
-              borderTop: "1.5px solid var(--clay-hairline)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }} className="flex-col sm:flex-row gap-3 sm:gap-0">
+            <div
+              style={{
+                padding: "16px 20px",
+                borderTop: "1.5px solid var(--clay-hairline)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+              className="flex-col sm:flex-row gap-3 sm:gap-0"
+            >
               <span style={{ fontSize: "13px", color: "var(--clay-muted)" }}>
-                Showing Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong> ({totalRecords} shipments total)
+                Showing Page <strong>{currentPage}</strong> of{" "}
+                <strong>{totalPages}</strong> ({totalRecords} shipments total)
               </span>
               <div style={{ display: "flex", gap: "8px" }}>
                 <button
                   disabled={currentPage === 1}
-                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.max(prev - 1, 1))
+                  }
                   className="clay-btn-secondary"
-                  style={{ height: "34px", padding: "0 12px", fontSize: "12px", opacity: currentPage === 1 ? 0.5 : 1 }}
+                  style={{
+                    height: "34px",
+                    padding: "0 12px",
+                    fontSize: "12px",
+                    opacity: currentPage === 1 ? 0.5 : 1,
+                  }}
                 >
                   Previous
                 </button>
                 <button
                   disabled={currentPage === totalPages}
-                  onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                  onClick={() =>
+                    setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                  }
                   className="clay-btn-secondary"
-                  style={{ height: "34px", padding: "0 12px", fontSize: "12px", opacity: currentPage === totalPages ? 0.5 : 1 }}
+                  style={{
+                    height: "34px",
+                    padding: "0 12px",
+                    fontSize: "12px",
+                    opacity: currentPage === totalPages ? 0.5 : 1,
+                  }}
                 >
                   Next
                 </button>
@@ -582,9 +665,7 @@ export default function Shipments() {
             zIndex: 1000,
           }}
         >
-          <div
-            className="p-4 sm:p-8 w-full max-w-[780px] max-h-[90vh] overflow-y-auto bg-[var(--clay-canvas)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline"
-          >
+          <div className="p-4 sm:p-8 w-full max-w-[780px] max-h-[90vh] overflow-y-auto bg-[var(--clay-canvas)] rounded-[var(--r-xl)] border-[1.5px] border-clay-hairline">
             <h3
               style={{
                 fontSize: "24px",
