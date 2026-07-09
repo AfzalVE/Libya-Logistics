@@ -6,6 +6,17 @@ import StatusBadge from "../components/StatusBadge";
 import useAuthStore from "../store/useAuthStore";
 
 
+const DOT_COLORS = {
+  BOOKED: "var(--clay-lavender)",
+  STORED: "var(--clay-mint)",
+  READY_FOR_DISPATCH: "var(--clay-peach)",
+  DISPATCHED: "var(--clay-ochre)",
+  IN_TRANSIT: "var(--clay-pink)",
+  RECEIVED: "var(--clay-teal)",
+  READY_FOR_PICKUP: "var(--clay-coral)",
+  COMPLETED: "#22c55e",
+};
+
 export default function Shipments() {
   const [shipments, setShipments] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
@@ -53,6 +64,8 @@ export default function Shipments() {
   // Search & Pagination States
   const [searchTerm, setSearchTerm] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalRecords, setTotalRecords] = useState(0);
@@ -60,7 +73,7 @@ export default function Shipments() {
   const fetchShipments = async () => {
     try {
       setLoading(true);
-      const res = await api.get(`/shipments?page=${currentPage}&limit=10&search=${searchQuery}`);
+      const res = await api.get(`/shipments?page=${currentPage}&limit=10&search=${searchQuery}&status=${statusFilter}`);
       if (res.data && res.data.data) {
         setShipments(res.data.data);
         setTotalPages(res.data.pagination.totalPages);
@@ -77,7 +90,7 @@ export default function Shipments() {
 
   useEffect(() => {
     fetchShipments();
-  }, [currentPage, searchQuery]);
+  }, [currentPage, searchQuery, statusFilter]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -88,6 +101,7 @@ export default function Shipments() {
   const handleClearSearch = () => {
     setSearchTerm("");
     setSearchQuery("");
+    setStatusFilter("");
     setCurrentPage(1);
   };
 
@@ -264,19 +278,137 @@ export default function Shipments() {
               </h2>
             </div>
 
-            <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "8px", maxWidth: "360px", width: "100%" }}>
+            <form onSubmit={handleSearchSubmit} style={{ display: "flex", gap: "8px", maxWidth: "540px", width: "100%", alignItems: "center" }}>
               <input
                 type="text"
                 placeholder="Search shipments..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="clay-input"
-                style={{ height: "36px", fontSize: "13px" }}
+                style={{ height: "36px", fontSize: "13px", flex: 1 }}
               />
+
+              <div style={{ position: "relative" }}>
+                <button
+                  type="button"
+                  onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                  className="clay-btn-secondary"
+                  style={{
+                    height: "36px",
+                    padding: "0 14px",
+                    fontSize: "13px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontWeight: 500,
+                    borderRadius: "var(--r-md)",
+                    whiteSpace: "nowrap"
+                  }}
+                >
+                  <span style={{
+                    width: "8px",
+                    height: "8px",
+                    borderRadius: "50%",
+                    backgroundColor: statusFilter ? DOT_COLORS[statusFilter] : "var(--clay-muted-soft)",
+                    display: "inline-block"
+                  }} />
+                  {statusFilter ? statusFilter.replace(/_/g, " ").toLowerCase().replace(/\b\w/g, c => c.toUpperCase()) : "All Statuses"}
+                  <span style={{ fontSize: "10px", color: "var(--clay-muted)" }}>▼</span>
+                </button>
+
+                {showStatusDropdown && (
+                  <>
+                    <div
+                      onClick={() => setShowStatusDropdown(false)}
+                      style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 99
+                      }}
+                    />
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "100%",
+                        right: 0,
+                        marginTop: "6px",
+                        background: "var(--clay-canvas)",
+                        borderRadius: "var(--r-md)",
+                        border: "1.5px solid var(--clay-hairline)",
+                        boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
+                        zIndex: 100,
+                        padding: "6px",
+                        minWidth: "185px",
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "2px"
+                      }}
+                    >
+                      {[
+                        { value: "", label: "All Statuses" },
+                        { value: "BOOKED", label: "Booked" },
+                        { value: "STORED", label: "Stored" },
+                        { value: "DISPATCHED", label: "Dispatched" },
+                        { value: "IN_TRANSIT", label: "In Transit" },
+                        { value: "READY_FOR_PICKUP", label: "Ready for Pickup" },
+                        { value: "COMPLETED", label: "Completed" },
+                      ].map((opt) => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setStatusFilter(opt.value);
+                            setCurrentPage(1);
+                            setShowStatusDropdown(false);
+                          }}
+                          style={{
+                            padding: "8px 12px",
+                            fontSize: "12px",
+                            fontWeight: statusFilter === opt.value ? 600 : 500,
+                            textAlign: "left",
+                            background: statusFilter === opt.value ? "var(--clay-surface-soft)" : "transparent",
+                            border: "none",
+                            borderRadius: "var(--r-xs)",
+                            cursor: "pointer",
+                            color: "var(--clay-ink)",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            transition: "background 0.1s ease",
+                            width: "100%"
+                          }}
+                          onMouseEnter={(e) => {
+                            if (statusFilter !== opt.value) {
+                              e.currentTarget.style.background = "var(--clay-surface-soft)";
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (statusFilter !== opt.value) {
+                              e.currentTarget.style.background = "transparent";
+                            }
+                          }}
+                        >
+                          <span style={{
+                            width: "8px",
+                            height: "8px",
+                            borderRadius: "50%",
+                            backgroundColor: opt.value ? DOT_COLORS[opt.value] : "var(--clay-muted-soft)",
+                            display: "inline-block"
+                          }} />
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
               <button type="submit" className="clay-btn-primary" style={{ height: "36px", padding: "0 16px", fontSize: "13px" }}>
                 Search
               </button>
-              {searchQuery && (
+              {(searchQuery || statusFilter) && (
                 <button type="button" onClick={handleClearSearch} className="clay-btn-secondary" style={{ height: "36px", padding: "0 12px", fontSize: "13px" }}>
                   Clear
                 </button>
