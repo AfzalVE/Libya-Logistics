@@ -214,6 +214,14 @@ export default function Sidebar({ isOpen, setIsOpen }) {
 
       </nav>
 
+      {/* Signature Clay Mountains background inside Sidebar */}
+      <div style={{ position: "relative", width: "100%", height: "60px", overflow: "hidden", opacity: 0.1, pointerEvents: "none", marginTop: "auto" }}>
+        <svg viewBox="0 0 400 120" style={{ position: "absolute", bottom: 0, left: 0, width: "100%" }}>
+          <path d="M0,120 L80,50 L160,100 L240,30 L320,90 L400,40 L400,120 Z" fill="var(--clay-ochre)" />
+          <path d="M0,120 L100,70 L200,110 L280,60 L360,100 L400,70 L400,120 Z" fill="var(--clay-pink)" />
+        </svg>
+      </div>
+
       {/* Footer User Card & Logout */}
       <div style={{
         padding: "16px 20px",

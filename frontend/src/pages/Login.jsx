@@ -116,6 +116,12 @@ export default function Login() {
           <div style={{ fontSize: "13px", color: "rgba(255,255,255,0.4)", zIndex: 1 }}>
             &copy; 2026 Libya Logistics. Powered by Clay Design.
           </div>
+
+          {/* Signature Clay Mountains background */}
+          <svg viewBox="0 0 400 120" style={{ position: "absolute", bottom: 0, left: 0, width: "100%", opacity: 0.15, pointerEvents: "none", zIndex: 0 }}>
+            <path d="M0,120 L80,50 L160,100 L240,30 L320,90 L400,40 L400,120 Z" fill="var(--clay-ochre)" />
+            <path d="M0,120 L100,70 L200,110 L280,60 L360,100 L400,70 L400,120 Z" fill="var(--clay-pink)" />
+          </svg>
         </div>
 
         {/* Right Panel: Login Form & Quick Access */}

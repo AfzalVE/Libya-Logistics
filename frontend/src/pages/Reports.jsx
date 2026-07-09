@@ -360,35 +360,62 @@ export default function Reports() {
               title: "Completed",
               value: report.summary.completed,
             },
-          ].map((card) => (
-            <div
-              key={card.title}
-              style={{
-                background: "var(--clay-canvas)",
-                border: "1.5px solid var(--clay-hairline)",
-                borderRadius: "var(--r-lg)",
-                padding: "24px",
-              }}
-            >
-              <p
+          ].map((card, idx) => {
+            const variants = [
+              { bg: "var(--clay-pink)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
+              { bg: "var(--clay-teal)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
+              { bg: "var(--clay-lavender)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+              { bg: "var(--clay-peach)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+            ];
+            const v = variants[idx % variants.length];
+            return (
+              <div
+                key={card.title}
+                className="clay-animate-fade-up"
                 style={{
-                  margin: 0,
-                  color: "var(--clay-muted)",
-                  fontSize: "12px",
+                  background: v.bg,
+                  color: v.fg,
+                  borderRadius: "var(--r-xl)",
+                  padding: "24px",
+                  position: "relative",
+                  overflow: "hidden",
                 }}
               >
-                {card.title}
-              </p>
+                <div style={{
+                  position: "absolute",
+                  right: "-15px", bottom: "-15px",
+                  width: "80px", height: "80px",
+                  borderRadius: "50%",
+                  background: "rgba(255,255,255,0.08)",
+                  pointerEvents: "none"
+                }} />
+                <p
+                  style={{
+                    margin: 0,
+                    color: v.muted,
+                    fontSize: "12px",
+                    fontWeight: 600,
+                    textTransform: "uppercase",
+                    letterSpacing: "1px"
+                  }}
+                >
+                  {card.title}
+                </p>
 
-              <h2
-                style={{
-                  marginTop: "8px",
-                }}
-              >
-                {card.value}
-              </h2>
-            </div>
-          ))}
+                <h2
+                  style={{
+                    marginTop: "8px",
+                    marginBottom: 0,
+                    fontSize: "30px",
+                    fontWeight: 600,
+                    letterSpacing: "-1px"
+                  }}
+                >
+                  {card.value}
+                </h2>
+              </div>
+            );
+          })}
         </div>
       )}
 

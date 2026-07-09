@@ -154,11 +154,12 @@ export default function Topbar({ onToggleSidebar }) {
           <div style={{
             height: "36px", width: "36px",
             borderRadius: "50%",
-            background: "var(--clay-lavender)",
+            background: ["var(--clay-lavender)", "var(--clay-peach)", "var(--clay-pink)", "var(--clay-ochre)", "var(--clay-mint)"][(user?.name?.length || 0) % 5],
             display: "flex", alignItems: "center", justifyContent: "center",
             fontWeight: 700, fontSize: "13px",
             color: "var(--clay-ink)",
             flexShrink: 0,
+            border: "1.5px solid var(--clay-ink)"
           }}>
             {getInitials(user?.name)}
           </div>

@@ -9,6 +9,8 @@ import {
   Tooltip,
   XAxis,
   YAxis,
+  AreaChart,
+  Area,
 } from "recharts";
 import api from "../services/api";
 import StatCard from "../components/StatCard";
@@ -66,6 +68,7 @@ export default function Dashboard() {
   const [statusDistribution, setStatusDistribution] = useState([]);
   const [recentShipments, setRecentShipments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedStageId, setSelectedStageId] = useState("BOOKED");
 
   const fetchDashboardData = async () => {
     try {
@@ -120,11 +123,49 @@ export default function Dashboard() {
     count: item.value
   }));
 
+  // Volume Trend mock data matching stats total
+  const trendData = [
+    { name: "Jul 01", count: Math.max(2, Math.floor(stats.totalShipments * 0.15)) },
+    { name: "Jul 02", count: Math.max(3, Math.floor(stats.totalShipments * 0.28)) },
+    { name: "Jul 03", count: Math.max(4, Math.floor(stats.totalShipments * 0.42)) },
+    { name: "Jul 04", count: Math.max(2, Math.floor(stats.totalShipments * 0.55)) },
+    { name: "Jul 05", count: Math.max(6, Math.floor(stats.totalShipments * 0.68)) },
+    { name: "Jul 06", count: Math.max(5, Math.floor(stats.totalShipments * 0.75)) },
+    { name: "Jul 07", count: Math.max(8, Math.floor(stats.totalShipments * 0.88)) },
+    { name: "Jul 08", count: Math.max(10, stats.totalShipments) },
+  ];
+
+  // Warehouse comparison
+  const warehouseComparisonData = [
+    { name: "Tripoli Central", volume: stats.totalShipments },
+    { name: "Benghazi Main", volume: Math.floor(stats.totalShipments * 0.4) },
+    { name: "Misrata Hub", volume: Math.floor(stats.totalShipments * 0.25) },
+  ];
+
   const warehousePerformance = [
     { warehouse: "Tripoli Central", shipments: stats.totalShipments, delivered: stats.completed, performance: "97%" },
     { warehouse: "Benghazi Main", shipments: Math.floor(stats.totalShipments * 0.4), delivered: Math.floor(stats.completed * 0.4), performance: "96%" },
     { warehouse: "Misrata Hub", shipments: Math.floor(stats.totalShipments * 0.25), delivered: Math.floor(stats.completed * 0.25), performance: "95%" },
   ];
+
+  // Lifecycle stages definition
+  const stages = [
+    { id: "BOOKED", label: "Booked", color: "var(--clay-ochre)", desc: "Shipment has been registered by the sender operator.", tip: "Requires warehouse staff to receive and label the parcel." },
+    { id: "STORED", label: "Stored", color: "var(--clay-peach)", desc: "Parcel is stored in the origin warehouse inventory.", tip: "Needs to be placed in the dispatch queue when carrier is assigned." },
+    { id: "READY_FOR_DISPATCH", label: "Ready Dispatch", color: "var(--clay-lavender)", desc: "Parcel is packed and staged for transport.", tip: "Awaiting final loading onto vehicle." },
+    { id: "DISPATCHED", label: "Dispatched", color: "var(--clay-pink)", desc: "Parcel has left the origin warehouse.", tip: "Carrier is on their way to destination hub." },
+    { id: "IN_TRANSIT", label: "In Transit", color: "var(--clay-pink)", desc: "Currently in transit between Libyan hubs.", tip: "Real-time updates are streamed via barcodes." },
+    { id: "RECEIVED", label: "Received", color: "var(--clay-mint)", desc: "Arrived at the destination warehouse.", tip: "Sorting team must scan and move to pickup shelves." },
+    { id: "READY_FOR_PICKUP", label: "Ready Pickup", color: "var(--clay-coral)", desc: "Awaiting customer collection.", tip: "System automatically notified the recipient." },
+    { id: "COMPLETED", label: "Completed", color: "var(--clay-teal)", desc: "Successfully delivered and signed.", tip: "Transaction cycle complete." },
+  ];
+
+  const selectedStage = stages.find(s => s.id === selectedStageId) || stages[0];
+
+  const getStatusCount = (statusId) => {
+    const found = statusDistribution.find(item => item.name === statusId);
+    return found ? found.value : 0;
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
@@ -201,9 +242,8 @@ export default function Dashboard() {
         <QuickCard label="Total Hubs" value={stats.warehouses} accent="var(--clay-lavender)" />
       </div>
 
-      {/* Charts + Activity Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-[1fr_1fr_360px] gap-5">
-
+      {/* Primary Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Pie Chart */}
         <div style={{
           background: "var(--clay-canvas)",
@@ -224,8 +264,8 @@ export default function Dashboard() {
                 data={pieData}
                 dataKey="value"
                 nameKey="name"
-                outerRadius={95}
-                innerRadius={40}
+                outerRadius={85}
+                innerRadius={45}
                 paddingAngle={3}
                 label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               >
@@ -246,6 +286,46 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
+        {/* Trend Area Chart */}
+        <div style={{
+          background: "var(--clay-canvas)",
+          borderRadius: "var(--r-lg)",
+          border: "1.5px solid var(--clay-hairline)",
+          padding: "24px",
+          height: "340px",
+        }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--clay-muted)", margin: "0 0 4px 0" }}>
+            Registrations
+          </p>
+          <h3 style={{ fontSize: "18px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
+            Shipment Booking Trend
+          </h3>
+          <ResponsiveContainer width="100%" height="75%">
+            <AreaChart data={trendData}>
+              <XAxis dataKey="name" tick={{ fontSize: 11, fill: "var(--clay-muted)" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "var(--clay-muted)" }} axisLine={false} tickLine={false} />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--clay-canvas)",
+                  border: "1.5px solid var(--clay-hairline)",
+                  borderRadius: "var(--r-md)",
+                  fontSize: "13px",
+                  boxShadow: "none",
+                }}
+              />
+              <Area type="monotone" dataKey="count" stroke="var(--clay-teal)" fill="var(--clay-mint)" fillOpacity={0.4} strokeWidth={2} />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Activity Feed */}
+        <div>
+          <ActivityFeed />
+        </div>
+      </div>
+
+      {/* Secondary Charts Row */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Bar Chart */}
         <div style={{
           background: "var(--clay-canvas)",
@@ -262,7 +342,7 @@ export default function Dashboard() {
           </h3>
           <ResponsiveContainer width="100%" height="75%">
             <BarChart data={barData} barSize={28}>
-              <XAxis dataKey="status" tick={{ fontSize: 11, fill: "var(--clay-muted)" }} axisLine={false} tickLine={false} />
+              <XAxis dataKey="status" tick={{ fontSize: 10, fill: "var(--clay-muted)" }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: "var(--clay-muted)" }} axisLine={false} tickLine={false} />
               <Tooltip
                 contentStyle={{
@@ -279,11 +359,132 @@ export default function Dashboard() {
           </ResponsiveContainer>
         </div>
 
-        {/* Activity Feed */}
-        <div className="lg:col-span-2 xl:col-span-1">
-          <ActivityFeed />
+        {/* Warehouse Volume Comparison (Horizontal Bar Chart) */}
+        <div style={{
+          background: "var(--clay-canvas)",
+          borderRadius: "var(--r-lg)",
+          border: "1.5px solid var(--clay-hairline)",
+          padding: "24px",
+          height: "340px",
+        }}>
+          <p style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--clay-muted)", margin: "0 0 4px 0" }}>
+            Hub Volume
+          </p>
+          <h3 style={{ fontSize: "18px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
+            Warehouse Hub Comparison
+          </h3>
+          <ResponsiveContainer width="100%" height="75%">
+            <BarChart data={warehouseComparisonData} layout="vertical" barSize={24}>
+              <XAxis type="number" tick={{ fontSize: 11, fill: "var(--clay-muted)" }} axisLine={false} tickLine={false} />
+              <YAxis dataKey="name" type="category" tick={{ fontSize: 11, fill: "var(--clay-ink)", fontWeight: 500 }} axisLine={false} tickLine={false} width={110} />
+              <Tooltip
+                contentStyle={{
+                  background: "var(--clay-canvas)",
+                  border: "1.5px solid var(--clay-hairline)",
+                  borderRadius: "var(--r-md)",
+                  fontSize: "13px",
+                  boxShadow: "none",
+                }}
+                cursor={{ fill: "var(--clay-surface-soft)" }}
+              />
+              <Bar dataKey="volume" fill="var(--clay-lavender)" radius={[0, 8, 8, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Shipment Lifecycle Interactive Diagram */}
+      <div style={{
+        background: "var(--clay-canvas)",
+        borderRadius: "var(--r-lg)",
+        border: "1.5px solid var(--clay-hairline)",
+        padding: "24px",
+      }}>
+        <p style={{ fontSize: "12px", fontWeight: 600, letterSpacing: "1px", textTransform: "uppercase", color: "var(--clay-muted)", margin: "0 0 4px 0" }}>
+          Operational Orchestrator
+        </p>
+        <h3 style={{ fontSize: "18px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 20px 0", letterSpacing: "-0.2px" }}>
+          Interactive Shipment Lifecycle Flow
+        </h3>
+
+        {/* Stages Line */}
+        <div style={{
+          display: "flex",
+          gap: "10px",
+          flexWrap: "wrap",
+          padding: "16px 0",
+          justifyContent: "space-between",
+          borderBottom: "1.5px solid var(--clay-hairline-soft)",
+          marginBottom: "20px"
+        }}>
+          {stages.map((stage) => {
+            const count = getStatusCount(stage.id);
+            const isSelected = selectedStageId === stage.id;
+            return (
+              <button
+                key={stage.id}
+                onClick={() => setSelectedStageId(stage.id)}
+                style={{
+                  flex: "1 1 120px",
+                  background: isSelected ? stage.color : "var(--clay-surface-soft)",
+                  color: isSelected ? (stage.color === "var(--clay-teal)" || stage.color === "var(--clay-pink)" ? "#ffffff" : "var(--clay-ink)") : "var(--clay-body)",
+                  border: isSelected ? "1.5px solid var(--clay-ink)" : "1.5px solid var(--clay-hairline)",
+                  borderRadius: "var(--r-md)",
+                  padding: "12px 16px",
+                  cursor: "pointer",
+                  textAlign: "center",
+                  fontWeight: 600,
+                  fontSize: "14px",
+                  transition: "all 0.2s ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                <span>{stage.label}</span>
+                <span style={{
+                  fontSize: "12px",
+                  opacity: 0.8,
+                  background: "rgba(0,0,0,0.06)",
+                  padding: "2px 8px",
+                  borderRadius: "999px"
+                }}>
+                  {count}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
+        {/* Selected Stage Detail Panel */}
+        <div style={{
+          background: "var(--clay-surface-card)",
+          borderRadius: "var(--r-lg)",
+          padding: "24px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+          borderLeft: `6px solid ${selectedStage.color}`
+        }}>
+          <h4 style={{ fontSize: "16px", fontWeight: 600, color: "var(--clay-ink)", margin: 0 }}>
+            Stage Detail: {selectedStage.label} ({getStatusCount(selectedStage.id)} items active)
+          </h4>
+          <p style={{ fontSize: "14px", color: "var(--clay-body)", margin: 0 }}>
+            {selectedStage.desc}
+          </p>
+          <div style={{
+            background: "var(--clay-canvas)",
+            borderRadius: "var(--r-md)",
+            padding: "12px 16px",
+            fontSize: "13px",
+            color: "var(--clay-muted)",
+            border: "1.5px solid var(--clay-hairline)",
+            fontWeight: 500
+          }}>
+            <strong style={{ color: "var(--clay-ink)" }}>Operator Tip:</strong> {selectedStage.tip}
+          </div>
+        </div>
       </div>
 
       {/* Warehouse Performance Table */}

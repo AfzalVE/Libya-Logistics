@@ -406,42 +406,61 @@ export default function ShipmentDetails() {
             value: `${shipment.receiverCustomer?.name} (${shipment.receiverCustomer?.mobile})`,
             color: "var(--clay-pink)",
           },
-        ].map(({ label, value, color }) => (
-          <div
-            key={label}
-            style={{
-              background: "var(--clay-canvas)",
-              borderRadius: "var(--r-lg)",
-              border: "1.5px solid var(--clay-hairline)",
-              padding: "20px 24px",
-              borderTop: `4px solid ${color}`,
-            }}
-          >
-            <p
+        ].map(({ label, value, color }, idx) => {
+          const variants = [
+            { bg: "var(--clay-teal)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
+            { bg: "var(--clay-ochre)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+            { bg: "var(--clay-lavender)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+            { bg: "var(--clay-pink)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
+          ];
+          const v = variants[idx % variants.length];
+          return (
+            <div
+              key={label}
               style={{
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                color: "var(--clay-muted)",
-                margin: "0 0 8px 0",
+                background: v.bg,
+                color: v.fg,
+                borderRadius: "var(--r-xl)",
+                padding: "24px",
+                position: "relative",
+                overflow: "hidden",
+                border: "1.5px solid var(--clay-ink)",
               }}
             >
-              {label}
-            </p>
-            <h3
-              style={{
-                fontSize: "15px",
-                fontWeight: 600,
-                color: "var(--clay-ink)",
-                margin: 0,
-                lineHeight: 1.4,
-              }}
-            >
-              {value}
-            </h3>
-          </div>
-        ))}
+              <div style={{
+                position: "absolute",
+                right: "-15px", bottom: "-15px",
+                width: "80px", height: "80px",
+                borderRadius: "50%",
+                background: "rgba(255,255,255,0.08)",
+                pointerEvents: "none"
+              }} />
+              <p
+                style={{
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  letterSpacing: "1px",
+                  textTransform: "uppercase",
+                  color: v.muted,
+                  margin: "0 0 8px 0",
+                }}
+              >
+                {label}
+              </p>
+              <h3
+                style={{
+                  fontSize: "15px",
+                  fontWeight: 600,
+                  color: v.fg,
+                  margin: 0,
+                  lineHeight: 1.4,
+                }}
+              >
+                {value}
+              </h3>
+            </div>
+          );
+        })}
       </div>
 
       {/* Main Grid: Info Details & Track Timeline */}

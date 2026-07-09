@@ -156,37 +156,57 @@ export default function Warehouses() {
         <>
           {/* Warehouse cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-            {warehouses.map(({ code, name, city, managerName, status }, i) => (
-              <div key={code} style={{
-                background: "var(--clay-canvas)",
-                borderRadius: "var(--r-lg)",
-                border: "1.5px solid var(--clay-hairline)",
-                padding: "24px",
-                borderTop: `4px solid ${ACCENT_COLORS[i % ACCENT_COLORS.length]}`,
-              }}>
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
+            {warehouses.map(({ code, name, city, managerName, status }, i) => {
+              const cardStyles = [
+                { bg: "var(--clay-teal)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
+                { bg: "var(--clay-pink)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
+                { bg: "var(--clay-lavender)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+                { bg: "var(--clay-peach)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+                { bg: "var(--clay-ochre)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+              ];
+              const v = cardStyles[i % cardStyles.length];
+              return (
+                <div key={code} style={{
+                  background: v.bg,
+                  color: v.fg,
+                  borderRadius: "var(--r-xl)",
+                  padding: "24px",
+                  position: "relative",
+                  overflow: "hidden",
+                  border: "1.5px solid var(--clay-ink)",
+                }}>
                   <div style={{
-                    width: "44px", height: "44px", borderRadius: "10px",
-                    background: ACCENT_COLORS[i % ACCENT_COLORS.length],
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    fontWeight: 700, fontSize: "14px",
-                    color: (i % ACCENT_COLORS.length) === 0 ? "#fff" : "var(--clay-ink)",
-                  }}>
-                    {code}
+                    position: "absolute",
+                    right: "-15px", bottom: "-15px",
+                    width: "80px", height: "80px",
+                    borderRadius: "50%",
+                    background: "rgba(255,255,255,0.08)",
+                    pointerEvents: "none"
+                  }} />
+                  <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
+                    <div style={{
+                      width: "44px", height: "44px", borderRadius: "10px",
+                      background: "rgba(0,0,0,0.1)",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      fontWeight: 700, fontSize: "14px",
+                      color: v.fg,
+                    }}>
+                      {code}
+                    </div>
+                    <StatusBadge status={status} />
                   </div>
-                  <StatusBadge status={status} />
+                  <h3 style={{ fontSize: "18px", fontWeight: 600, color: v.fg, margin: "0 0 4px 0", letterSpacing: "-0.3px" }}>
+                    {name}
+                  </h3>
+                  <p style={{ fontSize: "14px", color: v.muted, margin: "0 0 2px 0", fontWeight: 500 }}>
+                    {city}
+                  </p>
+                  <p style={{ fontSize: "13px", color: v.muted, margin: 0, fontWeight: 500 }}>
+                    Manager: {managerName || "Unassigned"}
+                  </p>
                 </div>
-                <h3 style={{ fontSize: "16px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 4px 0" }}>
-                  {name}
-                </h3>
-                <p style={{ fontSize: "14px", color: "var(--clay-muted)", margin: "0 0 2px 0" }}>
-                  {city}
-                </p>
-                <p style={{ fontSize: "13px", color: "var(--clay-muted-soft)", margin: 0 }}>
-                  Manager: {managerName || "Unassigned"}
-                </p>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* Full table */}
@@ -251,16 +271,17 @@ export default function Warehouses() {
                                   position: "absolute",
                                   right: 0,
                                   top: "100%",
-                                  marginTop: "4px",
+                                  marginTop: "6px",
                                   background: "var(--clay-canvas)",
-                                  borderRadius: "8px",
-                                  border: "1.5px solid var(--clay-hairline)",
-                                  boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+                                  borderRadius: "var(--r-md)",
+                                  border: "1.5px solid var(--clay-ink)",
+                                  boxShadow: "0 8px 24px rgba(10,10,10,0.08)",
                                   zIndex: 100,
-                                  minWidth: "120px",
+                                  minWidth: "130px",
                                   display: "flex",
                                   flexDirection: "column",
-                                  padding: "4px",
+                                  padding: "6px",
+                                  animation: "clay-scale-in 0.15s ease both"
                                 }}>
                                   <button
                                     onClick={() => {

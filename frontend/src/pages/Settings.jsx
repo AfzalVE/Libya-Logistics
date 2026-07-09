@@ -92,11 +92,14 @@ export default function Settings() {
         <div className="w-full lg:w-[240px] flex flex-row lg:flex-col gap-2 border-b lg:border-b-0 lg:border-r border-clay-hairline pb-4 lg:pb-0 lg:pr-4 flex-shrink-0">
           <button
             onClick={() => setActiveTab("profile")}
-            className="flex-1 lg:flex-none text-left p-3 rounded-lg font-medium text-sm transition-all"
+            className="flex-1 lg:flex-none text-left px-4 py-2.5 transition-all"
             style={{
-              background: activeTab === "profile" ? "var(--clay-surface-soft)" : "none",
+              background: activeTab === "profile" ? "var(--clay-surface-card)" : "transparent",
               color: activeTab === "profile" ? "var(--clay-ink)" : "var(--clay-muted)",
-              border: "none",
+              fontWeight: activeTab === "profile" ? 600 : 500,
+              fontSize: "14px",
+              borderRadius: "var(--r-pill)",
+              border: activeTab === "profile" ? "1.5px solid var(--clay-ink)" : "1.5px solid transparent",
               cursor: "pointer",
             }}
           >
@@ -104,11 +107,14 @@ export default function Settings() {
           </button>
           <button
             onClick={() => setActiveTab("security")}
-            className="flex-1 lg:flex-none text-left p-3 rounded-lg font-medium text-sm transition-all"
+            className="flex-1 lg:flex-none text-left px-4 py-2.5 transition-all"
             style={{
-              background: activeTab === "security" ? "var(--clay-surface-soft)" : "none",
+              background: activeTab === "security" ? "var(--clay-surface-card)" : "transparent",
               color: activeTab === "security" ? "var(--clay-ink)" : "var(--clay-muted)",
-              border: "none",
+              fontWeight: activeTab === "security" ? 600 : 500,
+              fontSize: "14px",
+              borderRadius: "var(--r-pill)",
+              border: activeTab === "security" ? "1.5px solid var(--clay-ink)" : "1.5px solid transparent",
               cursor: "pointer",
             }}
           >
