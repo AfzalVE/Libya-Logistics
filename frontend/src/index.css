@@ -14,6 +14,7 @@
   --clay-ink:              #0a0a0a;
   --clay-primary:          #0a0a0a;
   --clay-primary-active:   #1f1f1f;
+  --clay-on-primary:       #ffffff;
   --clay-body:             #3a3a3a;
   --clay-body-strong:      #1a1a1a;
   --clay-muted:            #6a6a6a;
@@ -60,6 +61,28 @@
   --sp-xl:  32px;
   --sp-xxl: 48px;
   --sp-sec: 96px;
+}
+
+/* === DARK THEME (Slate-Teal, professional, not pitch black) === */
+.dark {
+  --clay-ink:              #fffaf0;
+  --clay-primary:          #fffaf0;
+  --clay-primary-active:   #faf5e8;
+  --clay-on-primary:       #0a0a0a;
+  --clay-body:             #a5b5b9;
+  --clay-body-strong:      #e2ecef;
+  --clay-muted:            #7b8e93;
+  --clay-muted-soft:       #55686c;
+  --clay-hairline:         #283c43;
+  --clay-hairline-soft:    #1e2f34;
+
+  /* Surfaces */
+  --clay-canvas:           #0f171a;
+  --clay-surface-soft:     #172327;
+  --clay-surface-card:     #1e2d32;
+  --clay-surface-strong:   #25373e;
+  --clay-surface-dark:     #ebe6d6;
+  --clay-surface-dark-el:  #faf5e8;
 }
 
 /* === GLOBAL BASE === */
@@ -177,7 +200,7 @@ body {
   height: 44px;
   padding: 0 20px;
   background: var(--clay-primary);
-  color: #ffffff;
+  color: var(--clay-on-primary);
   font-size: 14px;
   font-weight: 600;
   border-radius: var(--r-md);

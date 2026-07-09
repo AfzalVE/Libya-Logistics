@@ -174,13 +174,15 @@ export default function Sidebar({ isOpen, setIsOpen }) {
               gap: "12px",
               padding: "11px 14px",
               borderRadius: "12px",
-              marginBottom: "4px",
+              marginBottom: "6px",
               textDecoration: "none",
-              fontWeight: 500,
+              fontWeight: isActive ? 600 : 500,
               fontSize: "14px",
-              transition: "background 0.15s ease, color 0.15s ease",
-              background: isActive ? "rgba(255,255,255,0.12)" : "transparent",
+              transition: "all 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+              background: isActive ? "rgba(255,255,255,0.14)" : "transparent",
               color: isActive ? "#ffffff" : "rgba(255,255,255,0.55)",
+              transform: isActive ? "scale(1.02)" : "scale(1)",
+              border: isActive ? "1px solid rgba(255, 255, 255, 0.15)" : "1px solid transparent",
             })}
           >
             {({ isActive }) => (
@@ -189,11 +191,11 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   width: "32px", height: "32px",
                   borderRadius: "8px",
-                  background: isActive ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.05)",
+                  background: isActive ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.05)",
                   color: isActive ? "#ffffff" : "rgba(255,255,255,0.55)",
                   fontSize: "14px",
                   flexShrink: 0,
-                  transition: "background 0.15s ease, color 0.15s ease",
+                  transition: "all 0.2s ease",
                 }}>
                   {item.icon}
                 </span>
@@ -205,6 +207,7 @@ export default function Sidebar({ isOpen, setIsOpen }) {
                     borderRadius: "50%",
                     background: "var(--clay-ochre)",
                     flexShrink: 0,
+                    boxShadow: "0 0 8px var(--clay-ochre)",
                   }} />
                 )}
               </>
@@ -240,11 +243,12 @@ export default function Sidebar({ isOpen, setIsOpen }) {
           <div style={{
             height: "40px", width: "40px",
             borderRadius: "50%",
-            background: "var(--clay-lavender)",
+            background: ["var(--clay-lavender)", "var(--clay-peach)", "var(--clay-pink)", "var(--clay-ochre)", "var(--clay-mint)"][(user?.name?.length || 0) % 5],
             display: "flex", alignItems: "center", justifyContent: "center",
             fontWeight: 700, fontSize: "14px",
             color: "var(--clay-ink)",
             flexShrink: 0,
+            border: "1.5px solid var(--clay-ink)"
           }}>
             {getInitials(user?.name)}
           </div>

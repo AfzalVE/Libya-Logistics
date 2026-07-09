@@ -157,52 +157,46 @@ export default function Warehouses() {
           {/* Warehouse cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
             {warehouses.map(({ code, name, city, managerName, status }, i) => {
-              const cardStyles = [
-                { bg: "var(--clay-teal)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
-                { bg: "var(--clay-pink)", fg: "#ffffff", muted: "rgba(255,255,255,0.75)" },
-                { bg: "var(--clay-lavender)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
-                { bg: "var(--clay-peach)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
-                { bg: "var(--clay-ochre)", fg: "var(--clay-ink)", muted: "rgba(10,10,10,0.6)" },
+              const accentColors = [
+                "var(--clay-teal)",
+                "var(--clay-pink)",
+                "var(--clay-lavender)",
+                "var(--clay-peach)",
+                "var(--clay-ochre)",
               ];
-              const v = cardStyles[i % cardStyles.length];
+              const accentColor = accentColors[i % accentColors.length];
               return (
                 <div key={code} style={{
-                  background: v.bg,
-                  color: v.fg,
-                  borderRadius: "var(--r-xl)",
-                  padding: "24px",
+                  background: "var(--clay-canvas)",
+                  borderRadius: "var(--r-md)",
+                  padding: "20px 24px",
                   position: "relative",
                   overflow: "hidden",
-                  border: "1.5px solid var(--clay-ink)",
+                  border: "1.5px solid var(--clay-hairline)",
+                  borderLeft: `5px solid ${accentColor}`,
+                  boxShadow: "0 4px 12px rgba(10,10,10,0.02)",
                 }}>
-                  <div style={{
-                    position: "absolute",
-                    right: "-15px", bottom: "-15px",
-                    width: "80px", height: "80px",
-                    borderRadius: "50%",
-                    background: "rgba(255,255,255,0.08)",
-                    pointerEvents: "none"
-                  }} />
                   <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
                     <div style={{
-                      width: "44px", height: "44px", borderRadius: "10px",
-                      background: "rgba(0,0,0,0.1)",
+                      width: "44px", height: "44px", borderRadius: "8px",
+                      background: "var(--clay-surface-soft)",
+                      border: "1.5px solid var(--clay-hairline)",
                       display: "flex", alignItems: "center", justifyContent: "center",
-                      fontWeight: 700, fontSize: "14px",
-                      color: v.fg,
+                      fontWeight: 700, fontSize: "13px",
+                      color: "var(--clay-ink)",
                     }}>
                       {code}
                     </div>
                     <StatusBadge status={status} />
                   </div>
-                  <h3 style={{ fontSize: "18px", fontWeight: 600, color: v.fg, margin: "0 0 4px 0", letterSpacing: "-0.3px" }}>
+                  <h3 style={{ fontSize: "18px", fontWeight: 600, color: "var(--clay-ink)", margin: "0 0 6px 0", letterSpacing: "-0.2px" }}>
                     {name}
                   </h3>
-                  <p style={{ fontSize: "14px", color: v.muted, margin: "0 0 2px 0", fontWeight: 500 }}>
+                  <p style={{ fontSize: "14px", color: "var(--clay-body)", margin: "0 0 4px 0", fontWeight: 500 }}>
                     {city}
                   </p>
-                  <p style={{ fontSize: "13px", color: v.muted, margin: 0, fontWeight: 500 }}>
-                    Manager: {managerName || "Unassigned"}
+                  <p style={{ fontSize: "13px", color: "var(--clay-muted)", margin: 0, fontWeight: 500 }}>
+                    Manager: <span style={{ color: "var(--clay-ink)", fontWeight: 600 }}>{managerName || "Unassigned"}</span>
                   </p>
                 </div>
               );

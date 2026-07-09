@@ -18,31 +18,43 @@ export default function ActivityFeed() {
   }, []);
 
   return (
-    <div style={{
-      background: "var(--clay-surface-card)",
-      borderRadius: "var(--r-lg)",
-      padding: "24px",
-      height: "100%",
-    }}>
-
+    <div
+      style={{
+        background: "var(--clay-surface-card)",
+        borderRadius: "var(--r-lg)",
+        padding: "24px",
+        height: "100%",
+      }}
+    >
       {/* Header */}
-      <div style={{
-        display: "flex", alignItems: "center",
-        justifyContent: "space-between",
-        marginBottom: "20px",
-      }}>
-        <h2 style={{
-          fontSize: "18px", fontWeight: 600,
-          color: "var(--clay-ink)", margin: 0,
-          letterSpacing: "-0.2px",
-        }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          marginBottom: "20px",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "18px",
+            fontWeight: 600,
+            color: "var(--clay-ink)",
+            margin: 0,
+            letterSpacing: "-0.2px",
+          }}
+        >
           Recent Activity
         </h2>
-        <span style={{
-          fontSize: "12px", fontWeight: 600,
-          letterSpacing: "1px", textTransform: "uppercase",
-          color: "var(--clay-muted)",
-        }}>
+        <span
+          style={{
+            fontSize: "12px",
+            fontWeight: 600,
+            letterSpacing: "1px",
+            textTransform: "uppercase",
+            color: "var(--clay-muted)",
+          }}
+        >
           Live
         </span>
       </div>
@@ -57,43 +69,58 @@ export default function ActivityFeed() {
               gap: "14px",
               paddingBottom: "16px",
               marginBottom: "16px",
-              borderBottom: index < Math.min(activities.length, 8) - 1
-                ? "1px solid var(--clay-hairline)"
-                : "none",
+              borderBottom:
+                index < Math.min(activities.length, 8) - 1
+                  ? "1px solid var(--clay-hairline)"
+                  : "none",
             }}
           >
             {/* Colored dot */}
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
-              <div style={{
-                width: "10px", height: "10px",
-                borderRadius: "50%",
-                background: ACTIVITY_COLORS[index % ACTIVITY_COLORS.length],
-                marginTop: "4px",
-              }} />
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                flexShrink: 0,
+              }}
+            >
+              <div
+                style={{
+                  width: "10px",
+                  height: "10px",
+                  borderRadius: "50%",
+                  background: ACTIVITY_COLORS[index % ACTIVITY_COLORS.length],
+                  marginTop: "4px",
+                }}
+              />
               {index < Math.min(activities.length, 8) - 1 && (
-                <div style={{
-                  width: "1.5px",
-                  flex: 1,
-                  background: "var(--clay-hairline)",
-                  marginTop: "6px",
-                  minHeight: "24px",
-                }} />
+                <div
+                  style={{
+                    width: "1.5px",
+                    flex: 1,
+                    background: "var(--clay-hairline)",
+                    marginTop: "6px",
+                    minHeight: "24px",
+                  }}
+                />
               )}
             </div>
 
             {/* Text */}
-            <p style={{
-              fontSize: "14px", fontWeight: 400,
-              color: "var(--clay-body)",
-              margin: 0, lineHeight: 1.5,
-            }}>
+            <p
+              style={{
+                fontSize: "14px",
+                fontWeight: 400,
+                color: "var(--clay-body)",
+                margin: 0,
+                lineHeight: 1.5,
+              }}
+            >
               {item.text}
             </p>
-
           </div>
         ))}
       </div>
-
     </div>
   );
 }
