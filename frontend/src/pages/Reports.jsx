@@ -76,34 +76,53 @@ export default function Reports() {
     });
   };
 
-  const handlePdfDownload = () => {
-    const params = new URLSearchParams();
+  const handlePdfDownload = async () => {
+    try {
+      const params = new URLSearchParams();
 
-    if (filters.from) params.append("from", filters.from);
-    if (filters.to) params.append("to", filters.to);
-    if (filters.warehouse) params.append("warehouse", filters.warehouse);
-    if (filters.status) params.append("status", filters.status);
-    if (filters.search) params.append("search", filters.search);
+      if (filters.from) params.append("from", filters.from);
+      if (filters.to) params.append("to", filters.to);
+      if (filters.warehouse) params.append("warehouse", filters.warehouse);
+      if (filters.status) params.append("status", filters.status);
+      if (filters.search) params.append("search", filters.search);
 
-    window.open(
-      `${import.meta.env.VITE_API_URL}/reports/pdf?${params.toString()}`,
-      "_blank",
-    );
+      const response = await api.get(`/reports/pdf?${params.toString()}`, {
+        responseType: "blob",
+      });
+
+      const url = URL.createObjectURL(response.data);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Failed to download PDF report:", err);
+    }
   };
 
-  const handleExcelDownload = () => {
-    const params = new URLSearchParams();
+  const handleExcelDownload = async () => {
+    try {
+      const params = new URLSearchParams();
 
-    if (filters.from) params.append("from", filters.from);
-    if (filters.to) params.append("to", filters.to);
-    if (filters.warehouse) params.append("warehouse", filters.warehouse);
-    if (filters.status) params.append("status", filters.status);
-    if (filters.search) params.append("search", filters.search);
+      if (filters.from) params.append("from", filters.from);
+      if (filters.to) params.append("to", filters.to);
+      if (filters.warehouse) params.append("warehouse", filters.warehouse);
+      if (filters.status) params.append("status", filters.status);
+      if (filters.search) params.append("search", filters.search);
 
-    window.open(
-      `${import.meta.env.VITE_API_URL}/reports/excel?${params.toString()}`,
-      "_blank",
-    );
+      const response = await api.get(`/reports/excel?${params.toString()}`, {
+        responseType: "blob",
+      });
+
+      const url = URL.createObjectURL(response.data);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "shipment-report.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Failed to download Excel report:", err);
+    }
   };
 
   const applyPreset = (type) => {

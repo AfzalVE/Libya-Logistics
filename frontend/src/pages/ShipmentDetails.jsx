@@ -153,11 +153,18 @@ export default function ShipmentDetails() {
     );
   };
 
-  const downloadInvoice = () => {
-    window.open(
-      `${import.meta.env.VITE_API_URL}/shipments/${id}/invoice`,
-      "_blank",
-    );
+  const downloadInvoice = async () => {
+    try {
+      const response = await api.get(`/shipments/${id}/invoice`, {
+        responseType: "blob",
+      });
+
+      const url = URL.createObjectURL(response.data);
+      window.open(url, "_blank");
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) {
+      console.error("Failed to download invoice:", err);
+    }
   };
 
   return (
