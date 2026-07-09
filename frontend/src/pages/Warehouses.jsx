@@ -4,6 +4,7 @@ import PageHeader from "../components/PageHeader";
 import TableCard from "../components/TableCard";
 import StatusBadge from "../components/StatusBadge";
 import useAuthStore from "../store/useAuthStore";
+import useToastStore from "../store/useToastStore";
 import { FaChevronDown } from "react-icons/fa";
 
 const ACCENT_COLORS = [
@@ -15,6 +16,7 @@ const ACCENT_COLORS = [
 ];
 
 export default function Warehouses() {
+  const { addToast } = useToastStore();
   const [warehouses, setWarehouses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -72,10 +74,13 @@ export default function Warehouses() {
       if (response.data.success) {
         setShowEditModal(false);
         setEditingWarehouse(null);
+        addToast("Warehouse updated successfully!", "success");
         fetchWarehouses();
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to update warehouse");
+      const msg = err.response?.data?.message || "Failed to update warehouse";
+      setError(msg);
+      addToast(msg, "error");
     } finally {
       setSubmitting(false);
     }
@@ -86,9 +91,10 @@ export default function Warehouses() {
     if (!confirmed) return;
     try {
       await api.delete(`/warehouses/${warehouseId}`);
+      addToast("Warehouse deleted successfully!", "success");
       fetchWarehouses();
     } catch (err) {
-      alert("Failed to delete warehouse");
+      addToast("Failed to delete warehouse", "error");
     }
   };
 
@@ -130,10 +136,13 @@ export default function Warehouses() {
         setAddress("");
         setPhone("");
         setManagerName("");
+        addToast("Warehouse created successfully!", "success");
         fetchWarehouses();
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create warehouse");
+      const msg = err.response?.data?.message || "Failed to create warehouse";
+      setError(msg);
+      addToast(msg, "error");
     } finally {
       setSubmitting(false);
     }
@@ -149,8 +158,28 @@ export default function Warehouses() {
       />
 
       {loading ? (
-        <div style={{ padding: "40px", textAlign: "center", color: "var(--clay-muted)" }}>
-          Loading warehouses...
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          {[1, 2, 3].map((n) => (
+            <div key={n} style={{
+              background: "var(--clay-canvas)",
+              borderRadius: "var(--r-md)",
+              padding: "20px 24px",
+              border: "1.5px solid var(--clay-hairline)",
+              borderLeft: "5px solid var(--clay-hairline)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px",
+              height: "170px"
+            }}>
+              <div style={{ display: "flex", justifyContent: "space-between" }}>
+                <div className="clay-skeleton" style={{ width: "44px", height: "44px", borderRadius: "8px" }} />
+                <div className="clay-skeleton" style={{ width: "70px", height: "24px", borderRadius: "var(--r-pill)" }} />
+              </div>
+              <div className="clay-skeleton" style={{ width: "60%", height: "18px", marginTop: "8px" }} />
+              <div className="clay-skeleton" style={{ width: "40%", height: "14px", marginTop: "4px" }} />
+              <div className="clay-skeleton" style={{ width: "50%", height: "14px", marginTop: "2px" }} />
+            </div>
+          ))}
         </div>
       ) : (
         <>

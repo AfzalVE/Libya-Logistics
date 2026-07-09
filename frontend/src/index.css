@@ -448,3 +448,49 @@ body {
   background-size: 16px 16px;
   opacity: 0.95;
 }
+
+/* === SKELETON LOADERS === */
+@keyframes clay-pulse {
+  0% {
+    opacity: 0.55;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.55;
+  }
+}
+
+.clay-skeleton {
+  background: var(--clay-surface-soft);
+  animation: clay-pulse 1.4s infinite ease-in-out;
+  border-radius: 6px;
+}
+
+/* === TOAST NOTIFICATIONS === */
+@keyframes clay-toast-in {
+  from {
+    transform: translateY(24px) scale(0.96);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+
+.clay-toast {
+  animation: clay-toast-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+/* === STAT CARD MICRO-INTERACTIONS === */
+.clay-stat-card {
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid var(--clay-ink) !important;
+}
+
+.clay-stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 24px rgba(10, 10, 10, 0.08);
+}

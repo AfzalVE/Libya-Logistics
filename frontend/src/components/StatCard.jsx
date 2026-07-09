@@ -66,7 +66,7 @@ export default function StatCard({
 
   return (
     <div
-      className="clay-animate-fade-up"
+      className="clay-animate-fade-up clay-stat-card"
       style={{
         background:    v.bg,
         borderRadius:  "var(--r-xl)",

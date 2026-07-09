@@ -4,9 +4,11 @@ import PageHeader from "../components/PageHeader";
 import TableCard from "../components/TableCard";
 import StatusBadge from "../components/StatusBadge";
 import useAuthStore from "../store/useAuthStore";
+import useToastStore from "../store/useToastStore";
 import { FaChevronDown } from "react-icons/fa";
 
 export default function Users() {
+  const { addToast } = useToastStore();
   const [users, setUsers] = useState([]);
   const [warehouses, setWarehouses] = useState([]);
   const [roles, setRoles] = useState([]);
@@ -131,10 +133,13 @@ export default function Users() {
         setName("");
         setEmail("");
         setPassword("");
+        addToast("User created successfully!", "success");
         fetchData();
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create user");
+      const msg = err.response?.data?.message || "Failed to create user";
+      setError(msg);
+      addToast(msg, "error");
     } finally {
       setSubmitting(false);
     }
@@ -176,20 +181,20 @@ export default function Users() {
 
       setShowEditModal(false);
       setEditingUser(null);
-
+      addToast("User updated successfully!", "success");
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.message || "Failed to update user");
+      addToast(err.response?.data?.message || "Failed to update user", "error");
     }
   };
 
   const handleToggleStatus = async (userId) => {
     try {
       await api.patch(`/users/${userId}/status`);
-
+      addToast("User status updated!", "success");
       fetchData();
     } catch (err) {
-      alert("Failed to update status");
+      addToast("Failed to update status", "error");
     }
   };
 
@@ -205,10 +210,10 @@ export default function Users() {
       await api.patch(`/users/${user._id}/role`, {
         roleName: nextRole,
       });
-
+      addToast("User role updated successfully!", "success");
       fetchData();
     } catch (err) {
-      alert("Failed to change role");
+      addToast("Failed to change role", "error");
     }
   };
 
@@ -219,10 +224,10 @@ export default function Users() {
 
     try {
       await api.delete(`/users/${userId}`);
-
+      addToast("User deleted successfully!", "success");
       fetchData();
     } catch (err) {
-      alert("Failed to delete user");
+      addToast("Failed to delete user", "error");
     }
   };
 
@@ -235,62 +240,68 @@ export default function Users() {
         onButtonClick={() => setShowModal(true)}
       />
 
-      {loading ? (
+      <TableCard>
         <div
           style={{
-            padding: "40px",
-            textAlign: "center",
-            color: "var(--clay-muted)",
+            padding: "16px 20px",
+            borderBottom: "1.5px solid var(--clay-hairline)",
           }}
         >
-          Loading users...
-        </div>
-      ) : (
-        <TableCard>
-          <div
+          <p
             style={{
-              padding: "16px 20px",
-              borderBottom: "1.5px solid var(--clay-hairline)",
+              fontSize: "12px",
+              fontWeight: 600,
+              letterSpacing: "1px",
+              textTransform: "uppercase",
+              color: "var(--clay-muted)",
+              margin: "0 0 2px 0",
             }}
           >
-            <p
-              style={{
-                fontSize: "12px",
-                fontWeight: 600,
-                letterSpacing: "1px",
-                textTransform: "uppercase",
-                color: "var(--clay-muted)",
-                margin: "0 0 2px 0",
-              }}
-            >
-              Directory
-            </p>
-            <h2
-              style={{
-                fontSize: "18px",
-                fontWeight: 600,
-                color: "var(--clay-ink)",
-                margin: 0,
-                letterSpacing: "-0.2px",
-              }}
-            >
-              System Users
-            </h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="clay-table">
-              <thead>
-                <tr>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Role</th>
-                  <th>Assigned Location</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((u) => (
+            Directory
+          </p>
+          <h2
+            style={{
+              fontSize: "18px",
+              fontWeight: 600,
+              color: "var(--clay-ink)",
+              margin: 0,
+              letterSpacing: "-0.2px",
+            }}
+          >
+            System Users
+          </h2>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="clay-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Assigned Location</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {loading ? (
+                [1, 2, 3, 4, 5].map((n) => (
+                  <tr key={n}>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                        <div className="clay-skeleton" style={{ width: "32px", height: "32px", borderRadius: "50%" }} />
+                        <div className="clay-skeleton" style={{ width: "80px", height: "14px" }} />
+                      </div>
+                    </td>
+                    <td><div className="clay-skeleton" style={{ width: "120px", height: "14px" }} /></td>
+                    <td><div className="clay-skeleton" style={{ width: "90px", height: "14px" }} /></td>
+                    <td><div className="clay-skeleton" style={{ width: "100px", height: "14px" }} /></td>
+                    <td><div className="clay-skeleton" style={{ width: "50px", height: "20px", borderRadius: "var(--r-pill)" }} /></td>
+                    <td><div className="clay-skeleton" style={{ width: "60px", height: "28px", borderRadius: "var(--r-xs)" }} /></td>
+                  </tr>
+                ))
+              ) : (
+                users.map((u) => (
                   <tr key={u._id}>
                     <td style={{ fontWeight: 500, color: "var(--clay-ink)" }}>
                       <div
@@ -458,12 +469,12 @@ export default function Users() {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </TableCard>
-      )}
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </TableCard>
 
       {/* Add User Modal */}
       {showModal && (

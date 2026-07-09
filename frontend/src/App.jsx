@@ -12,6 +12,7 @@ import ShipmentDetails from "./pages/ShipmentDetails";
 import Login from "./pages/Login";
 
 import useAuthStore from "./store/useAuthStore";
+import ToastContainer from "./components/ToastContainer";
 
 function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuthStore();
@@ -26,8 +27,10 @@ function AdminRoute({ children }) {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/login" element={<Login />} />
+    <>
+      <ToastContainer />
+      <Routes>
+        <Route path="/login" element={<Login />} />
       
       <Route
         element={
@@ -81,7 +84,8 @@ function App() {
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+      </Routes>
+    </>
   );
 }
 
