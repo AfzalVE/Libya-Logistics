@@ -409,3 +409,19 @@ body {
 .clay-animate-scale-in {
   animation: clay-scale-in 0.25s ease both;
 }
+
+/* === TIGHTENED DOT MATRIX PATTERN FOR LOGIN === */
+
+.clay-login-bg-pattern {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(10, 10, 10, 0.08) 1.2px, transparent 1.2px);
+  background-size: 16px 16px;
+  opacity: 0.95;
+}
